@@ -1,3 +1,6 @@
 # Zig GLFW
 
 Handmade...
+
+also very work in progress...
+so far only gott some windowing and thats it
