@@ -10,5 +10,6 @@
         "src",
         "README.md",
         "LICENSE",
+        "LICENSE-GLFW",
     },
 }
