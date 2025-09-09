@@ -2,19 +2,29 @@ const std = @import("std");
 const glfw = @import("glfw");
 
 pub fn main() !void {
-    try glfw.init();
-    defer glfw.deinit();
+    try glfw.init.init();
+    defer glfw.init.deinit();
 
-    const window: *glfw.Window = try .init(.{
+    const window: glfw.Window = try .init(.{
         .title = "Hello, world!",
         .size = .{ .width = 900, .height = 800 },
     });
     defer window.deinit();
 
+    std.log.info("{any}\n{s}", .{ glfw.init.Version.get(), glfw.init.Version.getStr() });
+
+    try window.initContextCurrent();
+    defer window.deinitContextCurrent();
+    std.log.info("Vulkan? {s}", .{if (try glfw.vulkan.vulkanSupported()) "yes" else "no"});
+    const exts = glfw.vulkan.getRequiredInstanceExtensions();
+    for (exts) |ext| {
+        std.log.info("\t{s}", .{ext});
+    }
+
     while (!window.shouldClose()) {
         glfw.pollEvents();
         glfw.c.glClearColor(0.1, 0.5, 0.3, 1.0);
         glfw.c.glClear(glfw.c.GL_COLOR_BUFFER_BIT);
-        glfw.c.glfwSwapBuffers(window.toC());
+        try window.swapBuffers();
     }
 }

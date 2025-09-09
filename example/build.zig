@@ -7,6 +7,7 @@ pub fn build(b: *std.Build) void {
     const zig_glfw = b.dependency("zig_glfw", .{
         .target = target,
         .optimize = optimize,
+        .vulkan = true,
     }).module("zig_glfw");
 
     const exe = b.addExecutable(.{
@@ -20,6 +21,7 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
+    exe.root_module.linkSystemLibrary("GL", .{});
 
     b.installArtifact(exe);
 
