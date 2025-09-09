@@ -8,13 +8,13 @@ pub const win32 = if (build_options.win32) struct {
     pub inline fn getMonitor(monitor: root.Monitor) ![*:0]const u8 {
         const m = c.glfwGetWin32Monitor(monitor);
         try err.check();
-        return m;
+        return @ptrCast(m);
     }
 
     pub inline fn getAdapter(monitor: root.Monitor) ![*:0]const u8 {
         const adapter = c.glfwGetWin32Adapter(monitor.toC());
         try err.check();
-        return adapter;
+        return @ptrCast(adapter);
     }
 
     pub inline fn getWindow(window: root.Window) !std.os.windows.HWND {
@@ -74,11 +74,11 @@ pub const x11 = if (build_options.x11) struct {
     }
 
     pub inline fn getSelectionStr() [*:0]const u8 {
-        return c.glfwGetX11SelectionString();
+        return @ptrCast(c.glfwGetX11SelectionString());
     }
 
     pub inline fn setSelectionStr(str: [*:0]const u8) !void {
-        c.glfwSetX11SelectionString(str);
+        c.glfwSetX11SelectionString(@ptrCast(str));
         try err.check();
     }
 } else struct {};
