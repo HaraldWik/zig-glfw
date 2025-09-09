@@ -11,7 +11,7 @@ pub fn main() !void {
     });
     defer window.deinit();
 
-    std.log.info("{any}\n{s}", .{ glfw.init.Version.get(), glfw.init.Version.getStr() });
+    std.log.info("{any}, {s}", .{ glfw.init.Version.get(), glfw.init.Version.getStr() });
 
     try window.initContextCurrent();
     defer window.deinitContextCurrent();
@@ -22,7 +22,7 @@ pub fn main() !void {
     }
 
     while (!window.shouldClose()) {
-        glfw.pollEvents();
+        glfw.io.events.poll();
         glfw.c.glClearColor(0.1, 0.5, 0.3, 1.0);
         glfw.c.glClear(glfw.c.GL_COLOR_BUFFER_BIT);
         try window.swapBuffers();

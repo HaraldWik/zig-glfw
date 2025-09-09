@@ -1,4 +1,3 @@
-const build_options = @import("build_options");
 const c = @import("c");
 const err = @import("err.zig");
 
@@ -29,8 +28,4 @@ pub inline fn init() !void {
 /// Same as 'glfwTerminate'
 pub inline fn deinit() void {
     c.glfwTerminate();
-}
-
-pub inline fn rawMouseMotionSupported() bool {
-    return c.glfwRawMouseMotionSupported() == c.GLFW_TRUE;
 }

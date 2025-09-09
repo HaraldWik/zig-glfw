@@ -1,7 +1,7 @@
 const std = @import("std");
 const build_options = @import("build_options");
-const c = @import("c");
 const root = @import("root.zig");
+const c = @import("c");
 const err = @import("err.zig");
 
 pub const win32 = if (build_options.win32) struct {
