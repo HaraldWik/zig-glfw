@@ -10,7 +10,7 @@ pub inline fn initVulkanLoader(loader: anytype) void {
     c.glfwInitVulkanLoader(loader);
 }
 
-pub inline fn vulkanSupported() !bool {
+pub inline fn supported() !bool {
     const result = c.glfwVulkanSupported() == c.GLFW_TRUE;
     try err.check();
     return result;

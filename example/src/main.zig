@@ -15,7 +15,7 @@ pub fn main() !void {
 
     try window.initContextCurrent();
     defer window.deinitContextCurrent();
-    std.log.info("Vulkan? {s}", .{if (try glfw.vulkan.vulkanSupported()) "yes" else "no"});
+    std.log.info("Vulkan? {s}", .{if (try glfw.vulkan.supported()) "yes" else "no"});
     const exts = glfw.vulkan.getRequiredInstanceExtensions();
     for (exts) |ext| {
         std.log.info("\t{s}", .{ext});
