@@ -7,7 +7,20 @@ pub fn build(b: *std.Build) void {
     const zig_glfw = b.dependency("zig_glfw", .{
         .target = target,
         .optimize = optimize,
+
+        // Exposes native api's
+        // .win32 = true,
+        // .cocoa = true,
+        // .x11 = true,
+        // .wayland = true,
+
         .vulkan = true,
+        // .none = true, // Gets rid of all the OpenGL api's
+        // .wgl = true,
+        // .nsgl = true,
+        // .glx = true,
+        // .egl = true,
+        // .osmesa = true,
     }).module("zig_glfw");
 
     const exe = b.addExecutable(.{

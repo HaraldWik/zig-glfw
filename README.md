@@ -2,5 +2,13 @@
 
 Handmade...
 
-also very work in progress...
-so far only gott some windowing and thats it
+Work in progress
+
+## Features
+
+- Monitor
+- Window
+- Io (events, keys)
+- Vulkan
+- Opengl
+- All native api's
