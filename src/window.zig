@@ -9,7 +9,7 @@ const Monitor = @import("monitor.zig").Monitor;
 pub const Image = c.GLFWimage;
 
 pub const Window = *opaque {
-    pub const CType = c.GLFWwindow;
+    pub const CType = *c.GLFWwindow;
 
     pub const Config = struct {
         title: [*:0]const u8,
@@ -55,7 +55,7 @@ pub const Window = *opaque {
         } = .{},
     };
 
-    pub inline fn toC(self: *@This()) *CType {
+    pub inline fn toC(self: *@This()) CType {
         return @ptrCast(self);
     }
 
@@ -275,69 +275,6 @@ pub const Window = *opaque {
 
     pub inline fn setUserPointer(self: *@This(), ptr: *anyopaque) !void {
         c.glfwSetWindowUserPointer(self.toC(), ptr);
-        try err.check();
-    }
-
-    pub inline fn getInputMode(self: *@This(), mode: usize) !usize {
-        const m = c.glfwGetInputMode(self.toC(), @intCast(mode));
-        try err.check();
-        return @intCast(m);
-    }
-
-    pub inline fn setInputMode(self: *@This(), mode: usize, value: usize) !void {
-        c.glfwSetInputMode(self.toC(), @intCast(mode), @intCast(value));
-        try err.check();
-    }
-
-    // TODO: Add dedicated key type
-    pub inline fn getKey(self: *@This(), key: usize) bool {
-        return c.glfwGetKey(self.toC(), @intCast(key)) == c.GLFW_TRUE;
-    }
-
-    pub inline fn getMouseButton(self: *@This(), button: io.MouseButton) bool {
-        return c.glfwGetMouseButton(self.toC(), @intFromEnum(button)) == c.GLFW_TRUE;
-    }
-
-    pub inline fn getCursorPosition(self: *@This()) root.Position(f64) {
-        var x: f64 = undefined;
-        var y: f64 = undefined;
-        c.glfwGetCursorPos(self.toC(), &x, &y);
-        try err.check();
-        return .{ .x = x, .y = y };
-    }
-
-    pub inline fn setCursorPosition(self: *@This(), position: root.Position(f64)) !void {
-        c.glfwSetCursorPos(self.toC(), @intCast(position.x), @intCast(position.y));
-        try err.check();
-    }
-
-    // TODO: Add cursor type
-    pub inline fn setCursor(self: *@This()) void {
-        c.glfwSetCursor(self.toC());
-        try err.check();
-    }
-
-    pub inline fn setClipboard(self: *@This(), str: [*:0]const u8) !void {
-        c.glfwSetClipboardString(self.toC(), str);
-        try err.check();
-    }
-
-    pub inline fn getClipboard(self: *@This()) ?[*:0]const u8 {
-        return @ptrCast(c.glfwGetClipboardString(self.toC()));
-    }
-
-    /// Same as 'makeContextCurrent'
-    pub inline fn initContextCurrent(self: *@This()) !void {
-        c.glfwMakeContextCurrent(self.toC());
-        try err.check();
-    }
-
-    pub inline fn deinitContextCurrent(_: *@This()) void {
-        c.glfwMakeContextCurrent(null);
-    }
-
-    pub inline fn swapBuffers(self: *@This()) !void {
-        c.glfwSwapBuffers(self.toC());
         try err.check();
     }
 };

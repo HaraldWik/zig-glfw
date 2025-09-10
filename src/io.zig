@@ -1,6 +1,24 @@
 const build_options = @import("build_options");
 const c = @import("c");
 const err = @import("err.zig");
+const root = @import("root.zig");
+const Window = @import("window.zig").Window;
+
+pub const Mode = enum(c_int) {
+    cursor = c.GLFW_CURSOR,
+    sticky_keys = c.GLFW_STICKY_KEYS,
+    sticky_mouse_buttons = c.GLFW_STICKY_MOUSE_BUTTONS,
+    lock_key_mods = c.GLFW_LOCK_KEY_MODS,
+    raw_mouse_motion = c.GLFW_RAW_MOUSE_MOTION,
+
+    pub inline fn get(self: @This(), window: Window) usize {
+        return @intCast(c.glfwGetInputMode(window.toC(), @intFromEnum(self)));
+    }
+
+    pub inline fn set(self: @This(), window: Window, value: usize) void {
+        c.glfwSetInputMode(window.toC(), @intFromEnum(self), @intCast(value));
+    }
+};
 
 pub const events = struct {
     pub inline fn poll() void {
@@ -15,28 +33,307 @@ pub const events = struct {
         c.glfwWaitEventsTimeout(timeout);
     }
 
-    pub inline fn sostEmpty() void {
+    pub inline fn postEmpty() void {
         c.glfwPostEmptyEvent();
     }
 };
 
-pub const MouseButton = enum(c_int) {
-    left = c.GLFW_MOUSE_BUTTON_LEFT,
-    middle = c.GLFW_MOUSE_BUTTON_MIDDLE,
-    right = c.GLFW_MOUSE_BUTTON_RIGHT,
-    @"1" = c.GLFW_MOUSE_BUTTON_1,
-    @"2" = c.GLFW_MOUSE_BUTTON_2,
-    @"3" = c.GLFW_MOUSE_BUTTON_3,
-    @"4" = c.GLFW_MOUSE_BUTTON_4,
-    @"5" = c.GLFW_MOUSE_BUTTON_5,
-    @"6" = c.GLFW_MOUSE_BUTTON_6,
-    @"7" = c.GLFW_MOUSE_BUTTON_7,
-    @"8" = c.GLFW_MOUSE_BUTTON_8,
+pub const mouse = struct {
+    pub const Button = enum(c_int) {
+        left = c.GLFW_MOUSE_BUTTON_LEFT,
+        middle = c.GLFW_MOUSE_BUTTON_MIDDLE,
+        right = c.GLFW_MOUSE_BUTTON_RIGHT,
+        @"1" = c.GLFW_MOUSE_BUTTON_1,
+        @"2" = c.GLFW_MOUSE_BUTTON_2,
+        @"3" = c.GLFW_MOUSE_BUTTON_3,
+        @"4" = c.GLFW_MOUSE_BUTTON_4,
+        @"5" = c.GLFW_MOUSE_BUTTON_5,
+        @"6" = c.GLFW_MOUSE_BUTTON_6,
+        @"7" = c.GLFW_MOUSE_BUTTON_7,
+        @"8" = c.GLFW_MOUSE_BUTTON_8,
+    };
+
+    pub inline fn getButton(self: *@This(), button: Button) bool {
+        return c.glfwGetMouseButton(self.toC(), @intFromEnum(button)) == c.GLFW_TRUE;
+    }
+
+    pub inline fn rawSupported() bool {
+        return c.glfwRawMouseMotionSupported() == c.GLFW_TRUE;
+    }
+
+    pub const Cursor = *opaque {
+        pub const CType = *c.GLFWcursor;
+
+        pub const Shape = enum(c_int) {
+            arrow = c.GLFW_ARROW_CURSOR,
+            ibeam = c.GLFW_IBEAM_CURSOR,
+            crosshair = c.GLFW_CROSSHAIR_CURSOR,
+            hand = c.GLFW_HAND_CURSOR,
+            hresize = c.GLFW_HRESIZE_CURSOR,
+            vresize = c.GLFW_VRESIZE_CURSOR,
+        };
+
+        pub inline fn toC(self: *@This()) CType {
+            return @ptrCast(self);
+        }
+
+        pub inline fn init(@"type": union(enum) { standard: Shape, custom: struct { image: *c.GLFWimage, hotspot: root.Position(usize) } }) !*@This() {
+            const cursor = switch (@"type") {
+                .standard => |shape| c.glfwCreateStandardCursor(@intFromEnum(shape)),
+                .custom => |custom| c.glfwCreateCursor(@ptrCast(custom.image), custom.hotspot.x, custom.hotspot.y),
+            };
+            try err.check();
+            return @ptrCast(cursor orelse return error.CreateCursor);
+        }
+
+        pub inline fn deinit(self: *@This()) void {
+            c.glfwDestroyCursor(self.toC());
+        }
+
+        pub inline fn set(self: *@This(), window: Window) void {
+            c.glfwSetCursor(window.toC(), self.toC());
+        }
+
+        pub inline fn getPosition(window: Window) root.Position(f64) {
+            var x: f64 = undefined;
+            var y: f64 = undefined;
+            c.glfwGetCursorPos(window.toC(), &x, &y);
+            try err.check();
+            return .{ .x = x, .y = y };
+        }
+
+        pub inline fn setPosition(window: Window, position: root.Position(f64)) !void {
+            c.glfwSetCursorPos(window.toC(), @intCast(position.x), @intCast(position.y));
+            try err.check();
+        }
+    };
 };
 
-pub inline fn rawMouseMotionSupported() bool {
-    return c.glfwRawMouseMotionSupported() == c.GLFW_TRUE;
-}
+pub const joystick = struct {
+    pub const ID = usize;
 
-// TODO: glfwGetKeyName
-// TODO: glfwGetKeyScancode
+    pub inline fn present(id: ID) bool {
+        return c.glfwJoystickPresent(@intCast(id)) == c.GLFW_TRUE;
+    }
+
+    pub inline fn isGamepad(id: ID) bool {
+        return c.glfwJoystickIsGamepad(@intCast(id)) == c.GLFW_TRUE;
+    }
+
+    pub inline fn getName(id: ID) ?[*:0]const u8 {
+        return @ptrCast(c.glfwGetJoystickName(@intCast(id)));
+    }
+
+    pub inline fn getGuid(id: ID) ?[*:0]const u8 {
+        return @ptrCast(c.glfwGetJoystickGUID(@intCast(id)));
+    }
+
+    pub inline fn getAxes(id: ID) !?[]const f32 {
+        var count: c_int = undefined;
+        const axes = c.glfwGetJoystickAxes(@intCast(id), &count);
+        try err.check();
+        return if (count <= 0 or axes == null) null else @ptrCast(axes[0..@intCast(count)]);
+    }
+
+    pub inline fn getButtons(id: ID) []const u8 {
+        var count: c_int = undefined;
+        const buttons = c.glfwGetJoystickButtons(@ptrCast(id), &count);
+        return @ptrCast(buttons[0..@intCast(count)]);
+    }
+
+    pub inline fn getHats(id: ID) []const u8 {
+        var count: c_int = undefined;
+        const hats = c.glfwGetJoystickHats(@ptrCast(id), &count);
+        return @ptrCast(hats[0..@intCast(count)]);
+    }
+
+    pub inline fn setUserPointer(id: ID, ptr: *anyopaque) !void {
+        c.glfwSetJoystickUserPointer(@intCast(id), ptr);
+        try err.check();
+    }
+
+    pub inline fn getUserPointer(id: ID) !?*anyopaque {
+        const ptr = c.glfwGetJoystickUserPointer(@intCast(id)) orelse return null;
+        try err.check();
+        return ptr;
+    }
+};
+
+pub const gamepad = struct {
+    pub const ID = joystick.ID;
+    pub const State = c.GLFWgamepadstate;
+
+    pub inline fn getName(id: ID) ?[*:0]const u8 {
+        return c.glfwGetGamepadName(@intCast(id));
+    }
+
+    pub inline fn getState(id: ID) ?State {
+        var state: c.GLFWgamepadstate = undefined;
+        return if (c.glfwGetGamepadState(@intCast(id), &state) == c.GLFW_TRUE) state else null;
+    }
+
+    pub inline fn updateMappings(str: [*:0]const u8) !void {
+        if (c.glfwUpdateGamepadMappings(str) != c.GLFW_TRUE) return error.UpdateGamepadMappings;
+    }
+};
+
+pub const clipboard = struct {
+    pub inline fn set(window: Window, str: [*:0]const u8) !void {
+        c.glfwSetClipboardString(window.toC(), str);
+        try err.check();
+    }
+
+    pub inline fn get(window: Window) ?[*:0]const u8 {
+        return @ptrCast(c.glfwGetClipboardString(window.toC()));
+    }
+};
+
+pub const Key = enum(c_int) {
+    space = c.GLFW_KEY_SPACE,
+    apostrophe = c.GLFW_KEY_APOSTROPHE,
+    comma = c.GLFW_KEY_COMMA,
+    minus = c.GLFW_KEY_MINUS,
+    period = c.GLFW_KEY_PERIOD,
+    slash = c.GLFW_KEY_SLASH,
+    @"0" = c.GLFW_KEY_0,
+    @"1" = c.GLFW_KEY_1,
+    @"2" = c.GLFW_KEY_2,
+    @"3" = c.GLFW_KEY_3,
+    @"4" = c.GLFW_KEY_4,
+    @"5" = c.GLFW_KEY_5,
+    @"6" = c.GLFW_KEY_6,
+    @"7" = c.GLFW_KEY_7,
+    @"8" = c.GLFW_KEY_8,
+    @"9" = c.GLFW_KEY_9,
+    semicolon = c.GLFW_KEY_SEMICOLON,
+    equal = c.GLFW_KEY_EQUAL,
+    a = c.GLFW_KEY_A,
+    b = c.GLFW_KEY_B,
+    c = c.GLFW_KEY_C,
+    d = c.GLFW_KEY_D,
+    e = c.GLFW_KEY_E,
+    f = c.GLFW_KEY_F,
+    g = c.GLFW_KEY_G,
+    h = c.GLFW_KEY_H,
+    i = c.GLFW_KEY_I,
+    j = c.GLFW_KEY_J,
+    k = c.GLFW_KEY_K,
+    l = c.GLFW_KEY_L,
+    m = c.GLFW_KEY_M,
+    n = c.GLFW_KEY_N,
+    o = c.GLFW_KEY_O,
+    p = c.GLFW_KEY_P,
+    q = c.GLFW_KEY_Q,
+    r = c.GLFW_KEY_R,
+    s = c.GLFW_KEY_S,
+    t = c.GLFW_KEY_T,
+    u = c.GLFW_KEY_U,
+    v = c.GLFW_KEY_V,
+    w = c.GLFW_KEY_W,
+    x = c.GLFW_KEY_X,
+    y = c.GLFW_KEY_Y,
+    z = c.GLFW_KEY_Z,
+    left_bracket = c.GLFW_KEY_LEFT_BRACKET,
+    backslash = c.GLFW_KEY_BACKSLASH,
+    right_bracket = c.GLFW_KEY_RIGHT_BRACKET,
+    grave_accent = c.GLFW_KEY_GRAVE_ACCENT,
+    world_1 = c.GLFW_KEY_WORLD_1,
+    world_2 = c.GLFW_KEY_WORLD_2,
+
+    escape = c.GLFW_KEY_ESCAPE,
+    enter = c.GLFW_KEY_ENTER,
+    tab = c.GLFW_KEY_TAB,
+    backspace = c.GLFW_KEY_BACKSPACE,
+    insert = c.GLFW_KEY_INSERT,
+    delete = c.GLFW_KEY_DELETE,
+    right = c.GLFW_KEY_RIGHT,
+    left = c.GLFW_KEY_LEFT,
+    down = c.GLFW_KEY_DOWN,
+    up = c.GLFW_KEY_UP,
+    page_up = c.GLFW_KEY_PAGE_UP,
+    page_down = c.GLFW_KEY_PAGE_DOWN,
+    home = c.GLFW_KEY_HOME,
+    end = c.GLFW_KEY_END,
+    caps_lock = c.GLFW_KEY_CAPS_LOCK,
+    scroll_lock = c.GLFW_KEY_SCROLL_LOCK,
+    num_lock = c.GLFW_KEY_NUM_LOCK,
+    print_screen = c.GLFW_KEY_PRINT_SCREEN,
+    pause = c.GLFW_KEY_PAUSE,
+    f1 = c.GLFW_KEY_F1,
+    f2 = c.GLFW_KEY_F2,
+    f3 = c.GLFW_KEY_F3,
+    f4 = c.GLFW_KEY_F4,
+    f5 = c.GLFW_KEY_F5,
+    f6 = c.GLFW_KEY_F6,
+    f7 = c.GLFW_KEY_F7,
+    f8 = c.GLFW_KEY_F8,
+    f9 = c.GLFW_KEY_F9,
+    f10 = c.GLFW_KEY_F10,
+    f11 = c.GLFW_KEY_F11,
+    f12 = c.GLFW_KEY_F12,
+    f13 = c.GLFW_KEY_F13,
+    f14 = c.GLFW_KEY_F14,
+    f15 = c.GLFW_KEY_F15,
+    f16 = c.GLFW_KEY_F16,
+    f17 = c.GLFW_KEY_F17,
+    f18 = c.GLFW_KEY_F18,
+    f19 = c.GLFW_KEY_F19,
+    f20 = c.GLFW_KEY_F20,
+    f21 = c.GLFW_KEY_F21,
+    f22 = c.GLFW_KEY_F22,
+    f23 = c.GLFW_KEY_F23,
+    f24 = c.GLFW_KEY_F24,
+    f25 = c.GLFW_KEY_F25,
+    kp_0 = c.GLFW_KEY_KP_0,
+    kp_1 = c.GLFW_KEY_KP_1,
+    kp_2 = c.GLFW_KEY_KP_2,
+    kp_3 = c.GLFW_KEY_KP_3,
+    kp_4 = c.GLFW_KEY_KP_4,
+    kp_5 = c.GLFW_KEY_KP_5,
+    kp_6 = c.GLFW_KEY_KP_6,
+    kp_7 = c.GLFW_KEY_KP_7,
+    kp_8 = c.GLFW_KEY_KP_8,
+    kp_9 = c.GLFW_KEY_KP_9,
+    kp_decimal = c.GLFW_KEY_KP_DECIMAL,
+    kp_divide = c.GLFW_KEY_KP_DIVIDE,
+    kp_multiply = c.GLFW_KEY_KP_MULTIPLY,
+    kp_subtract = c.GLFW_KEY_KP_SUBTRACT,
+    kp_add = c.GLFW_KEY_KP_ADD,
+    kp_enter = c.GLFW_KEY_KP_ENTER,
+    kp_equal = c.GLFW_KEY_KP_EQUAL,
+    left_shift = c.GLFW_KEY_LEFT_SHIFT,
+    left_control = c.GLFW_KEY_LEFT_CONTROL,
+    left_alt = c.GLFW_KEY_LEFT_ALT,
+    left_super = c.GLFW_KEY_LEFT_SUPER,
+    right_shift = c.GLFW_KEY_RIGHT_SHIFT,
+    right_control = c.GLFW_KEY_RIGHT_CONTROL,
+    right_alt = c.GLFW_KEY_RIGHT_ALT,
+    right_super = c.GLFW_KEY_RIGHT_SUPER,
+    menu = c.GLFW_KEY_MENU,
+
+    pub const State = packed struct(u3) {
+        release: bool,
+        press: bool,
+        repeat: bool,
+    };
+
+    /// Same as 'glfwGetKey'
+    pub inline fn get(self: @This(), window: Window) State {
+        const state = c.glfwGetKey(window.toC(), @intFromEnum(self));
+        return .{
+            .release = state == c.GLFW_RELEASE,
+            .press = state == c.GLFW_PRESS,
+            .repeat = state == c.GLFW_REPEAT,
+        };
+    }
+
+    /// Same as 'glfwGetKeyScancode'
+    pub inline fn toScancode(self: @This()) usize {
+        return @intCast(c.glfwGetKeyScancode(@intFromEnum(self)));
+    }
+
+    /// Same as 'glfwGetKeyName'
+    pub inline fn toStr(self: @This()) ?[*:0]const u8 {
+        return @ptrCast(c.glfwGetKeyName(@intFromEnum(self), @intCast(self.toScancode())) orelse return null);
+    }
+};

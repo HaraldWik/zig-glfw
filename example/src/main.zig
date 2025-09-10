@@ -13,9 +13,11 @@ pub fn main() !void {
 
     std.log.info("{any}, {s}", .{ glfw.init.Version.get(), glfw.init.Version.getStr() });
 
-    try window.initContextCurrent();
-    defer window.deinitContextCurrent();
+    glfw.opengl.makeContextCurrent(window);
+    defer glfw.opengl.makeContextCurrent(null);
+
     std.log.info("Vulkan? {s}", .{if (try glfw.vulkan.supported()) "yes" else "no"});
+
     const exts = glfw.vulkan.getRequiredInstanceExtensions();
     for (exts) |ext| {
         std.log.info("\t{s}", .{ext});
@@ -25,6 +27,11 @@ pub fn main() !void {
         glfw.io.events.poll();
         glfw.c.glClearColor(0.1, 0.5, 0.3, 1.0);
         glfw.c.glClear(glfw.c.GL_COLOR_BUFFER_BIT);
-        try window.swapBuffers();
+
+        if (glfw.io.Key.a.get(window).release) {
+            std.debug.print("A\n", .{});
+        }
+
+        try glfw.opengl.swapBuffers(window);
     }
 }

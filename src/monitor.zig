@@ -4,9 +4,9 @@ const c = @import("c");
 const err = @import("err.zig");
 
 pub const Monitor = *opaque {
-    pub const CType = c.GLFWmonitor;
+    pub const CType = *c.GLFWmonitor;
 
-    pub inline fn toC(self: *@This()) *CType {
+    pub inline fn toC(self: *@This()) CType {
         return @ptrCast(self);
     }
 

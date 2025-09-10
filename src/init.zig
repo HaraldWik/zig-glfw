@@ -21,7 +21,7 @@ pub const Version = struct {
 };
 
 pub inline fn init() !void {
-    // glfwInitAllocator
+    // c.glfwInitAllocator();
     if (err.errorFromInt(@intCast(c.glfwInit()))) |e| return e;
 }
 
