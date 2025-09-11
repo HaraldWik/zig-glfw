@@ -2,8 +2,8 @@ const std = @import("std");
 const glfw = @import("glfw");
 
 pub fn main() !void {
-    try glfw.init.init();
-    defer glfw.init.deinit();
+    try glfw.init();
+    defer glfw.deinit();
 
     const window: glfw.Window = try .init(.{
         .title = "Hello, world!",
@@ -11,7 +11,7 @@ pub fn main() !void {
     });
     defer window.deinit();
 
-    std.log.info("{any}, {s}", .{ glfw.init.Version.get(), glfw.init.Version.getStr() });
+    std.log.info("{any}, {s}", .{ glfw.Version.get(), glfw.Version.getStr() });
 
     glfw.opengl.makeContextCurrent(window);
     defer glfw.opengl.makeContextCurrent(null);
@@ -28,7 +28,7 @@ pub fn main() !void {
         glfw.c.glClearColor(0.1, 0.5, 0.3, 1.0);
         glfw.c.glClear(glfw.c.GL_COLOR_BUFFER_BIT);
 
-        if (glfw.io.Key.a.get(window).release) {
+        if (glfw.io.Key.a.get(window).press) {
             std.debug.print("A\n", .{});
         }
 
