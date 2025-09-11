@@ -15,6 +15,31 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     }).createModule();
 
+    const glfw = b.dependency("glfw", .{});
+
+    const glfw_lib = b.addLibrary(.{
+        .name = "glfw",
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+        .linkage = .static,
+    });
+
+    const files: []const ?[]const u8 = &.{
+        "context.c",
+        "init.c",
+        "input.c",
+        "monitor.c",
+        "vulkan.c",
+        "window.c",
+        "osmesa_context.c",
+    };
+    for (files) |file| {
+        if (file) |_| glfw_lib.addCSourceFile(.{ .file = glfw.path(b.fmt("src/{s}", .{file.?})) });
+    }
+
     const mod = b.addModule("zig_glfw", .{
         .root_source_file = b.path("src/root.zig"),
         .target = target,
@@ -23,49 +48,47 @@ pub fn build(b: *std.Build) void {
             .{ .name = "c", .module = c },
         },
     });
-    mod.linkSystemLibrary("GLFW", .{});
+    // mod.linkSystemLibrary("GLFW", .{});
+    mod.linkLibrary(glfw_lib);
 
-    const win32 = b.option(bool, "win32", "GLFW_EXPOSE_NATIVE_WIN32") orelse (target.result.os.tag == .windows);
-    const cocoa = b.option(bool, "cocoa", "GLFW_EXPOSE_NATIVE_COCOA") orelse (target.result.os.tag == .macos);
-    const x11 = b.option(bool, "x11", "GLFW_EXPOSE_NATIVE_X11") orelse (target.result.os.tag == .linux);
-    const wayland = b.option(bool, "wayland", "GLFW_EXPOSE_NATIVE_WAYLAND") orelse (target.result.os.tag == .linux);
-
-    const vulkan = b.option(bool, "vulkan", "VK_VERSION_1_0") orelse false;
-    const none = b.option(bool, "none", "GLFW_INCLUDE_NONE") orelse false;
-    const wgl = b.option(bool, "wgl", "GLFW_EXPOSE_NATIVE_WGL") orelse false;
-    const nsgl = b.option(bool, "nsgl", "GLFW_EXPOSE_NATIVE_NSGL") orelse false;
-    const glx = b.option(bool, "glx", "GLFW_EXPOSE_NATIVE_GLX") orelse false;
-    const egl = b.option(bool, "egl", "GLFW_EXPOSE_NATIVE_EGL") orelse false;
-    const osmesa = b.option(bool, "osmesa", "GLFW_EXPOSE_NATIVE_OSMESA") orelse false;
+    const win32 = b.option(bool, "win32", "GLFW_EXPOSE_NATIVE_WIN32");
+    const cocoa = b.option(bool, "cocoa", "GLFW_EXPOSE_NATIVE_COCOA");
+    const x11 = b.option(bool, "x11", "GLFW_EXPOSE_NATIVE_X11");
+    const wayland = b.option(bool, "wayland", "GLFW_EXPOSE_NATIVE_WAYLAND");
+    const vulkan = b.option(bool, "vulkan", "VK_VERSION_1_0");
+    const none = b.option(bool, "none", "GLFW_INCLUDE_NONE");
+    const wgl = b.option(bool, "wgl", "GLFW_EXPOSE_NATIVE_WGL");
+    const nsgl = b.option(bool, "nsgl", "GLFW_EXPOSE_NATIVE_NSGL");
+    const glx = b.option(bool, "glx", "GLFW_EXPOSE_NATIVE_GLX");
+    const egl = b.option(bool, "egl", "GLFW_EXPOSE_NATIVE_EGL");
+    const osmesa = b.option(bool, "osmesa", "GLFW_EXPOSE_NATIVE_OSMESA");
 
     const options = b.addOptions();
-    options.addOption(bool, "win32", win32);
-    options.addOption(bool, "cocoa", cocoa);
-    options.addOption(bool, "x11", x11);
-    options.addOption(bool, "wayland", wayland);
-
-    options.addOption(bool, "vulkan", vulkan);
-    options.addOption(bool, "none", none);
-    options.addOption(bool, "wgl", wgl);
-    options.addOption(bool, "nsgl", nsgl);
-    options.addOption(bool, "glx", glx);
-    options.addOption(bool, "egl", glx);
-    options.addOption(bool, "osmesa", osmesa);
+    options.addOption(bool, "win32", win32 orelse false);
+    options.addOption(bool, "cocoa", cocoa orelse false);
+    options.addOption(bool, "x11", x11 orelse false);
+    options.addOption(bool, "wayland", wayland orelse false);
+    options.addOption(bool, "vulkan", vulkan orelse false);
+    options.addOption(bool, "none", none orelse false);
+    options.addOption(bool, "wgl", wgl orelse false);
+    options.addOption(bool, "nsgl", nsgl orelse false);
+    options.addOption(bool, "glx", glx orelse false);
+    options.addOption(bool, "egl", glx orelse false);
+    options.addOption(bool, "osmesa", osmesa orelse false);
 
     mod.addOptions("build_options", options);
 
-    if (win32) mod.addCMacro("#define GLFW_EXPOSE_NATIVE_WIN32", "1");
-    if (cocoa) mod.addCMacro("#define GLFW_EXPOSE_NATIVE_COCOA", "1");
-    if (x11) mod.addCMacro("#define GLFW_EXPOSE_NATIVE_X11", "1");
-    if (wayland) mod.addCMacro("#define GLFW_EXPOSE_NATIVE_WAYLAND", "1");
-
-    if (vulkan) mod.addCMacro("#define VK_VERSION_1_0", "1");
-    if (none) mod.addCMacro("#define GLFW_INCLUDE_NONE", "1");
-    if (wgl) mod.addCMacro("#define GLFW_EXPOSE_NATIVE_WGL", "1");
-    if (nsgl) mod.addCMacro("#define GLFW_EXPOSE_NATIVE_WGL", "1");
-    if (glx) mod.addCMacro("#define GLFW_EXPOSE_NATIVE_GLX", "1");
-    if (egl) mod.addCMacro("#define GLFW_EXPOSE_NATIVE_EGL", "1");
-    if (osmesa) mod.addCMacro("#define GLFW_EXPOSE_NATIVE_OSMESA", "1");
+    if (win32) |def| mod.addCMacro("#define GLFW_EXPOSE_NATIVE_WIN32", if (def) "1" else "0");
+    if (cocoa) |def| mod.addCMacro("#define GLFW_EXPOSE_NATIVE_COCOA", if (def) "1" else "0");
+    if (x11) |def| mod.addCMacro("#define GLFW_EXPOSE_NATIVE_X11", if (def) "1" else "0");
+    if (wayland) |def| mod.addCMacro("#define GLFW_EXPOSE_NATIVE_WAYLAND", if (def) "1" else "0");
+    if (vulkan) |def| mod.addCMacro("#define VK_VERSION_1_0", if (def) "1" else "0");
+    if (none) |def| mod.addCMacro("#define GLFW_INCLUDE_NONE", if (def) "1" else "0");
+    if (wgl) |def| mod.addCMacro("#define GLFW_EXPOSE_NATIVE_WGL", if (def) "1" else "0");
+    if (nsgl) |def| mod.addCMacro("#define GLFW_EXPOSE_NATIVE_WGL", if (def) "1" else "0");
+    if (glx) |def| mod.addCMacro("#define GLFW_EXPOSE_NATIVE_GLX", if (def) "1" else "0");
+    if (egl) |def| mod.addCMacro("#define GLFW_EXPOSE_NATIVE_EGL", if (def) "1" else "0");
+    if (osmesa) |def| mod.addCMacro("#define GLFW_EXPOSE_NATIVE_OSMESA", if (def) "1" else "0");
 
     const mod_tests = b.addTest(.{
         .root_module = mod,
