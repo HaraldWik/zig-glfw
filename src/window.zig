@@ -6,8 +6,6 @@ const io = @import("io.zig");
 
 const Monitor = @import("monitor.zig").Monitor;
 
-pub const Image = c.GLFWimage;
-
 pub const Window = *opaque {
     pub const CType = *c.GLFWwindow;
 
@@ -130,8 +128,8 @@ pub const Window = *opaque {
         try err.check();
     }
 
-    pub inline fn setIcon(self: *@This(), count: usize, images: []const Image) !void {
-        c.glfwSetWindowIcon(self.toC(), @intCast(count), @ptrCast(images));
+    pub inline fn setIcon(self: *@This(), count: usize, image: root.Image) !void {
+        c.glfwSetWindowIcon(self.toC(), @intCast(count), @ptrCast(&image.toC()));
         try err.check();
     }
 

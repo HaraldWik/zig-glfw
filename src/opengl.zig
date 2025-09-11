@@ -18,3 +18,7 @@ pub inline fn swapBuffers(window: Window) !void {
     c.glfwSwapBuffers(window.toC());
     try err.check();
 }
+
+pub inline fn swapInterval(interval: usize) void {
+    c.glfwSwapInterval(@intCast(interval));
+}

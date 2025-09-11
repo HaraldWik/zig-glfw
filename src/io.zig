@@ -77,10 +77,10 @@ pub const mouse = struct {
             return @ptrCast(self);
         }
 
-        pub inline fn init(@"type": union(enum) { standard: Shape, custom: struct { image: *c.GLFWimage, hotspot: root.Position(usize) } }) !*@This() {
+        pub inline fn init(@"type": union(enum) { standard: Shape, custom: struct { image: root.Image, hotspot: root.Position(usize) } }) !*@This() {
             const cursor = switch (@"type") {
                 .standard => |shape| c.glfwCreateStandardCursor(@intFromEnum(shape)),
-                .custom => |custom| c.glfwCreateCursor(@ptrCast(custom.image), custom.hotspot.x, custom.hotspot.y),
+                .custom => |custom| c.glfwCreateCursor(@ptrCast(&custom.image.toC()), custom.hotspot.x, custom.hotspot.y),
             };
             try err.check();
             return @ptrCast(cursor orelse return error.CreateCursor);
