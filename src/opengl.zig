@@ -1,8 +1,12 @@
+const std = @import("std");
+const builtin = @import("builtin");
 const c = @import("c");
 const err = @import("err.zig");
 const Window = @import("window.zig").Window;
 
-pub fn getProcAddress(proc_name: [*:0]const u8) *const fn () void {
+pub const APIENTRY: std.builtin.CallingConvention = if (builtin.os.tag == .windows) .winapi else .c;
+
+pub fn getProcAddress(proc_name: [*:0]const u8) ?*const fn () callconv(APIENTRY) void {
     return c.glfwGetProcAddress(@ptrCast(proc_name));
 }
 

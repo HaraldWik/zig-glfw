@@ -146,12 +146,11 @@ pub const Window = *opaque {
         try err.check();
     }
 
-    pub inline fn getSize(self: *@This()) !root.Size(usize) {
+    pub inline fn getSize(self: *@This()) root.Size(usize) {
         var width: c_int = undefined;
         var height: c_int = undefined;
         c.glfwGetWindowSize(self.toC(), &width, &height);
-        try err.check();
-        return .{ .widht = @intCast(width), .height = @intCast(height) };
+        return .{ .width = @intCast(width), .height = @intCast(height) };
     }
 
     pub inline fn setSize(self: *@This(), size: root.Size(usize)) !void {
