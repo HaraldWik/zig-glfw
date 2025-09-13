@@ -13,8 +13,8 @@ pub fn Position(T: type) type {
     return struct {
         x: T,
         y: T,
-        pub const Tuple = struct { T, T };
-        pub fn toTuple(self: @This()) Tuple {
+
+        pub fn toArray(self: @This()) [2]T {
             return .{ self.x, self.y };
         }
     };
@@ -25,8 +25,7 @@ pub fn Size(T: type) type {
         width: T,
         height: T,
 
-        pub const Tuple = struct { T, T };
-        pub fn toTuple(self: @This()) Tuple {
+        pub fn toArray(self: @This()) [2]T {
             return .{ self.width, self.height };
         }
     };
