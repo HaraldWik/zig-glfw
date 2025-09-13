@@ -6,7 +6,7 @@ const err = @import("err.zig");
 
 pub const win32 = if (build_options.win32) struct {
     pub fn getMonitor(monitor: root.Monitor) ![*:0]const u8 {
-        const m = c.glfwGetWin32Monitor(monitor);
+        const m = c.glfwGetWin32Monitor(monitor.toC());
         try err.check();
         return @ptrCast(m);
     }
