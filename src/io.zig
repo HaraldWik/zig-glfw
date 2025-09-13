@@ -51,11 +51,11 @@ pub const mouse = struct {
         @"6" = c.GLFW_MOUSE_BUTTON_6,
         @"7" = c.GLFW_MOUSE_BUTTON_7,
         @"8" = c.GLFW_MOUSE_BUTTON_8,
-    };
 
-    pub inline fn getButton(self: *@This(), button: Button) bool {
-        return c.glfwGetMouseButton(self.toC(), @intFromEnum(button)) == c.GLFW_TRUE;
-    }
+        pub inline fn get(button: @This(), window: Window) bool {
+            return c.glfwGetMouseButton(window.toC(), @intFromEnum(button)) == c.GLFW_TRUE;
+        }
+    };
 
     pub inline fn rawSupported() bool {
         return c.glfwRawMouseMotionSupported() == c.GLFW_TRUE;
