@@ -6,6 +6,17 @@ const err = @import("err.zig");
 pub const Monitor = *opaque {
     pub const CType = *c.GLFWmonitor;
 
+    pub const VideoMode = struct {
+        pub const CType = c.GLFWvidmode;
+
+        width: isize,
+        height: isize,
+        redBits: isize,
+        greenBits: isize,
+        blueBits: isize,
+        refreshRate: isize,
+    };
+
     pub fn toC(self: *@This()) CType {
         return @ptrCast(self);
     }
@@ -58,18 +69,31 @@ pub const Monitor = *opaque {
         return @ptrCast(c.glfwGetMonitorName(self.toC()));
     }
 
-    pub fn getUserPointer(self: *@This()) ?*anyopaque {
-        return c.glfwGetMonitorUserPointer(self.toC());
+    pub fn getVideoModes(self: *@This()) []const VideoMode {
+        var count: c_int = undefined;
+        const video_modes = c.glfwGetVideoModes(self.toC(), &count);
+        return @ptrCast(video_modes[0..@intCast(count)]);
     }
 
-    pub fn setUserPointer(self: *@This(), ptr: *anyopaque) !void {
-        c.glfwSetMonitorUserPointer(self.toC(), ptr);
+    pub fn setGamma(self: *@This()) !void {
+        c.glfwSetGamma(self.toC());
         try err.check();
     }
 
-    // TODO: add glfwGetVideoModes
-    // TODO: add glfwGetVideoMode
-    // TODO: add glfwSetGamma
-    // TODO: add glfwGetGammaRamp
-    // TODO: add glfwSetGammaRamp
+    pub fn getGammaRamp(self: *@This()) *c.GLFWgammaramp {
+        return @ptrCast(c.glfwGetGammaRamp(self.toC()));
+    }
+
+    pub fn setGammaRamp(self: *@This(), ramp: *c.GLFWgammaramp) void {
+        c.glfwSetGammaRamp(self.toC(), @ptrCast(ramp));
+    }
+
+    pub fn getUserPtr(self: *@This()) ?*anyopaque {
+        return c.glfwGetMonitorUserPointer(self.toC());
+    }
+
+    pub fn setUserPtr(self: *@This(), ptr: *anyopaque) !void {
+        c.glfwSetMonitorUserPointer(self.toC(), ptr);
+        try err.check();
+    }
 };

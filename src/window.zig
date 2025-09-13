@@ -119,8 +119,8 @@ pub const Window = *opaque {
         c.glfwSetWindowShouldClose(self.toC(), @intFromBool(value));
     }
 
-    pub fn getTitle(self: *@This()) ![*:0]const u8 {
-        return c.glfwGetWindowTitle(self.toC()) orelse error.GetWindowTitle;
+    pub fn getTitle(self: *@This()) ?[*:0]const u8 {
+        return @ptrCast(c.glfwGetWindowTitle(self.toC()));
     }
 
     pub fn setTitle(self: *@This(), title: [*:0]const u8) !void {
@@ -194,10 +194,8 @@ pub const Window = *opaque {
         return .{ .x = @intCast(x), .y = @intCast(y) };
     }
 
-    pub fn getOpacity(self: *@This()) !f32 {
-        const opacity = c.glfwGetWindowOpacity(self.toC());
-        try err.check();
-        return opacity;
+    pub fn getOpacity(self: *@This()) f32 {
+        return c.glfwGetWindowOpacity(self.toC());
     }
 
     pub fn setOpacity(self: *@This(), opacity: f32) !void {
@@ -240,10 +238,8 @@ pub const Window = *opaque {
         try err.check();
     }
 
-    pub fn getMonitor(self: *@This()) !*Monitor {
-        const monitor = c.glfwGetWindowMonitor(self.toC()) orelse return error.GetMonitor;
-        try err.check();
-        return monitor;
+    pub fn getMonitor(self: *@This()) ?Monitor {
+        return c.glfwGetWindowMonitor(self.toC());
     }
 
     pub fn setMonitor(self: *@This(), monitor: *Monitor, position: root.Position(usize), size: root.Size(usize), refresh_rate: usize) !void {
@@ -251,26 +247,13 @@ pub const Window = *opaque {
         try err.check();
     }
 
-    // TODO: Add attribute type
-    pub fn getAttribute(self: *@This(), attribute: usize) !usize {
-        const a = c.glfwGetWindowAttrib(self.toC(), @intCast(attribute));
-        try err.check();
-        return @intCast(a);
-    }
-
-    // TODO: Add attribute type
-    pub fn setAttribute(self: *@This(), attribute: usize, value: usize) !void {
-        c.glfwSetWindowAttrib(self.toC(), @intCast(attribute), @intCast(value));
-        try err.check();
-    }
-
-    pub fn getUserPointer(self: *@This()) !*anyopaque {
+    pub fn getUserPtr(self: *@This()) !*anyopaque {
         const ptr = c.glfwGetWindowUserPointer(self.toC()) orelse return error.GetWindowUserPointer;
         try err.check();
         return ptr;
     }
 
-    pub fn setUserPointer(self: *@This(), ptr: *anyopaque) !void {
+    pub fn setUserPtr(self: *@This(), ptr: *anyopaque) !void {
         c.glfwSetWindowUserPointer(self.toC(), ptr);
         try err.check();
     }

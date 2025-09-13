@@ -147,12 +147,12 @@ pub const joystick = struct {
         return @ptrCast(hats[0..@intCast(count)]);
     }
 
-    pub fn setUserPointer(id: ID, ptr: *anyopaque) !void {
+    pub fn setUserPtr(id: ID, ptr: *anyopaque) !void {
         c.glfwSetJoystickUserPointer(@intFromEnum(id), ptr);
         try err.check();
     }
 
-    pub fn getUserPointer(id: ID) !?*anyopaque {
+    pub fn getUserPtr(id: ID) !?*anyopaque {
         const ptr = c.glfwGetJoystickUserPointer(@intFromEnum(id)) orelse return null;
         try err.check();
         return ptr;
@@ -161,7 +161,36 @@ pub const joystick = struct {
 
 pub const gamepad = struct {
     pub const ID = joystick.ID;
-    pub const State = c.GLFWgamepadstate;
+    pub const State = struct {
+        pub const CType = c.GLFWgamepadstate;
+
+        axis: struct {
+            left_x: f32,
+            left_y: f32,
+            right_x: f32,
+            right_y: f32,
+            left_trigger: f32,
+            right_trigger: f32,
+        },
+
+        buttons: packed struct(u15) {
+            a: bool,
+            b: bool,
+            x: bool,
+            y: bool,
+            left_bumper: bool,
+            right_bumper: bool,
+            back: bool,
+            start: bool,
+            guide: bool,
+            left_thumb: bool,
+            right_thumb: bool,
+            dpad_up: bool,
+            dpad_right: bool,
+            dpad_down: bool,
+            dpad_left: bool,
+        },
+    };
 
     pub fn getName(id: ID) ?[*:0]const u8 {
         return c.glfwGetGamepadName(@intFromEnum(id));
@@ -169,7 +198,33 @@ pub const gamepad = struct {
 
     pub fn getState(id: ID) ?State {
         var state: c.GLFWgamepadstate = undefined;
-        return if (c.glfwGetGamepadState(@intFromEnum(id), &state) == c.GLFW_TRUE) state else null;
+        return if (c.glfwGetGamepadState(@intFromEnum(id), &state) != c.GLFW_TRUE) null else State{
+            .axis = .{
+                .left_x = state.axes[c.GLFW_GAMEPAD_AXIS_LEFT_X],
+                .left_y = state.axes[c.GLFW_GAMEPAD_AXIS_LEFT_Y],
+                .right_x = state.axes[c.GLFW_GAMEPAD_AXIS_RIGHT_X],
+                .right_y = state.axes[c.GLFW_GAMEPAD_AXIS_RIGHT_Y],
+                .left_trigger = state.axes[c.GLFW_GAMEPAD_AXIS_LEFT_TRIGGER],
+                .right_trigger = state.axes[c.GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER],
+            },
+            .buttons = .{
+                .a = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_A)] == c.GLFW_PRESS,
+                .b = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_B)] == c.GLFW_PRESS,
+                .x = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_X)] == c.GLFW_PRESS,
+                .y = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_Y)] == c.GLFW_PRESS,
+                .left_bumper = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_LEFT_BUMPER)] == c.GLFW_PRESS,
+                .right_bumper = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER)] == c.GLFW_PRESS,
+                .back = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_BACK)] == c.GLFW_PRESS,
+                .start = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_START)] == c.GLFW_PRESS,
+                .guide = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_GUIDE)] == c.GLFW_PRESS,
+                .left_thumb = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_LEFT_THUMB)] == c.GLFW_PRESS,
+                .right_thumb = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_RIGHT_THUMB)] == c.GLFW_PRESS,
+                .dpad_up = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_DPAD_UP)] == c.GLFW_PRESS,
+                .dpad_right = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_DPAD_RIGHT)] == c.GLFW_PRESS,
+                .dpad_down = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_DPAD_DOWN)] == c.GLFW_PRESS,
+                .dpad_left = state.buttons[@intCast(c.GLFW_GAMEPAD_BUTTON_DPAD_LEFT)] == c.GLFW_PRESS,
+            },
+        };
     }
 
     pub fn updateMappings(str: [*:0]const u8) !void {
