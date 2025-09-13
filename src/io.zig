@@ -11,29 +11,29 @@ pub const Mode = enum(c_int) {
     lock_key_mods = c.GLFW_LOCK_KEY_MODS,
     raw_mouse_motion = c.GLFW_RAW_MOUSE_MOTION,
 
-    pub inline fn get(self: @This(), window: Window) usize {
+    pub fn get(self: @This(), window: Window) usize {
         return @intCast(c.glfwGetInputMode(window.toC(), @intFromEnum(self)));
     }
 
-    pub inline fn set(self: @This(), window: Window, value: usize) void {
+    pub fn set(self: @This(), window: Window, value: usize) void {
         c.glfwSetInputMode(window.toC(), @intFromEnum(self), @intCast(value));
     }
 };
 
 pub const events = struct {
-    pub inline fn poll() void {
+    pub fn poll() void {
         c.glfwPollEvents();
     }
 
-    pub inline fn wait() void {
+    pub fn wait() void {
         c.glfwWaitEvents();
     }
 
-    pub inline fn waitTimeout(timeout: f64) void {
+    pub fn waitTimeout(timeout: f64) void {
         c.glfwWaitEventsTimeout(timeout);
     }
 
-    pub inline fn postEmpty() void {
+    pub fn postEmpty() void {
         c.glfwPostEmptyEvent();
     }
 };
@@ -52,12 +52,12 @@ pub const mouse = struct {
         @"7" = c.GLFW_MOUSE_BUTTON_7,
         @"8" = c.GLFW_MOUSE_BUTTON_8,
 
-        pub inline fn get(button: @This(), window: Window) bool {
+        pub fn get(button: @This(), window: Window) bool {
             return c.glfwGetMouseButton(window.toC(), @intFromEnum(button)) == c.GLFW_TRUE;
         }
     };
 
-    pub inline fn rawSupported() bool {
+    pub fn rawSupported() bool {
         return c.glfwRawMouseMotionSupported() == c.GLFW_TRUE;
     }
 
@@ -73,11 +73,11 @@ pub const mouse = struct {
             vresize = c.GLFW_VRESIZE_CURSOR,
         };
 
-        pub inline fn toC(self: *@This()) CType {
+        pub fn toC(self: *@This()) CType {
             return @ptrCast(self);
         }
 
-        pub inline fn init(@"type": union(enum) { standard: Shape, custom: struct { image: root.Image, hotspot: root.Position(usize) } }) !*@This() {
+        pub fn init(@"type": union(enum) { standard: Shape, custom: struct { image: root.Image, hotspot: root.Position(usize) } }) !*@This() {
             const cursor = switch (@"type") {
                 .standard => |shape| c.glfwCreateStandardCursor(@intFromEnum(shape)),
                 .custom => |custom| c.glfwCreateCursor(@ptrCast(&custom.image.toC()), custom.hotspot.x, custom.hotspot.y),
@@ -86,15 +86,15 @@ pub const mouse = struct {
             return @ptrCast(cursor orelse return error.CreateCursor);
         }
 
-        pub inline fn deinit(self: *@This()) void {
+        pub fn deinit(self: *@This()) void {
             c.glfwDestroyCursor(self.toC());
         }
 
-        pub inline fn set(self: *@This(), window: Window) void {
+        pub fn set(self: *@This(), window: Window) void {
             c.glfwSetCursor(window.toC(), self.toC());
         }
 
-        pub inline fn getPosition(window: Window) root.Position(f64) {
+        pub fn getPosition(window: Window) root.Position(f64) {
             var x: f64 = undefined;
             var y: f64 = undefined;
             c.glfwGetCursorPos(window.toC(), &x, &y);
@@ -102,7 +102,7 @@ pub const mouse = struct {
             return .{ .x = x, .y = y };
         }
 
-        pub inline fn setPosition(window: Window, position: root.Position(f64)) !void {
+        pub fn setPosition(window: Window, position: root.Position(f64)) !void {
             c.glfwSetCursorPos(window.toC(), @intCast(position.x), @intCast(position.y));
             try err.check();
         }
@@ -110,50 +110,50 @@ pub const mouse = struct {
 };
 
 pub const joystick = struct {
-    pub const ID = usize;
+    pub const ID = enum(c_int) { _ };
 
-    pub inline fn present(id: ID) bool {
-        return c.glfwJoystickPresent(@intCast(id)) == c.GLFW_TRUE;
+    pub fn present(id: ID) bool {
+        return c.glfwJoystickPresent(@intFromEnum(id)) == c.GLFW_TRUE;
     }
 
-    pub inline fn isGamepad(id: ID) bool {
-        return c.glfwJoystickIsGamepad(@intCast(id)) == c.GLFW_TRUE;
+    pub fn isGamepad(id: ID) bool {
+        return c.glfwJoystickIsGamepad(@intFromEnum(id)) == c.GLFW_TRUE;
     }
 
-    pub inline fn getName(id: ID) ?[*:0]const u8 {
-        return @ptrCast(c.glfwGetJoystickName(@intCast(id)));
+    pub fn getName(id: ID) ?[*:0]const u8 {
+        return @ptrCast(c.glfwGetJoystickName(@intFromEnum(id)));
     }
 
-    pub inline fn getGuid(id: ID) ?[*:0]const u8 {
-        return @ptrCast(c.glfwGetJoystickGUID(@intCast(id)));
+    pub fn getGuid(id: ID) ?[*:0]const u8 {
+        return @ptrCast(c.glfwGetJoystickGUID(@intFromEnum(id)));
     }
 
-    pub inline fn getAxes(id: ID) !?[]const f32 {
+    pub fn getAxes(id: ID) !?[]const f32 {
         var count: c_int = undefined;
-        const axes = c.glfwGetJoystickAxes(@intCast(id), &count);
+        const axes = c.glfwGetJoystickAxes(@intFromEnum(id), &count);
         try err.check();
         return if (count <= 0 or axes == null) null else @ptrCast(axes[0..@intCast(count)]);
     }
 
-    pub inline fn getButtons(id: ID) []const u8 {
+    pub fn getButtons(id: ID) []const u8 {
         var count: c_int = undefined;
         const buttons = c.glfwGetJoystickButtons(@ptrCast(id), &count);
         return @ptrCast(buttons[0..@intCast(count)]);
     }
 
-    pub inline fn getHats(id: ID) []const u8 {
+    pub fn getHats(id: ID) []const u8 {
         var count: c_int = undefined;
         const hats = c.glfwGetJoystickHats(@ptrCast(id), &count);
         return @ptrCast(hats[0..@intCast(count)]);
     }
 
-    pub inline fn setUserPointer(id: ID, ptr: *anyopaque) !void {
-        c.glfwSetJoystickUserPointer(@intCast(id), ptr);
+    pub fn setUserPointer(id: ID, ptr: *anyopaque) !void {
+        c.glfwSetJoystickUserPointer(@intFromEnum(id), ptr);
         try err.check();
     }
 
-    pub inline fn getUserPointer(id: ID) !?*anyopaque {
-        const ptr = c.glfwGetJoystickUserPointer(@intCast(id)) orelse return null;
+    pub fn getUserPointer(id: ID) !?*anyopaque {
+        const ptr = c.glfwGetJoystickUserPointer(@intFromEnum(id)) orelse return null;
         try err.check();
         return ptr;
     }
@@ -163,27 +163,27 @@ pub const gamepad = struct {
     pub const ID = joystick.ID;
     pub const State = c.GLFWgamepadstate;
 
-    pub inline fn getName(id: ID) ?[*:0]const u8 {
-        return c.glfwGetGamepadName(@intCast(id));
+    pub fn getName(id: ID) ?[*:0]const u8 {
+        return c.glfwGetGamepadName(@intFromEnum(id));
     }
 
-    pub inline fn getState(id: ID) ?State {
+    pub fn getState(id: ID) ?State {
         var state: c.GLFWgamepadstate = undefined;
-        return if (c.glfwGetGamepadState(@intCast(id), &state) == c.GLFW_TRUE) state else null;
+        return if (c.glfwGetGamepadState(@intFromEnum(id), &state) == c.GLFW_TRUE) state else null;
     }
 
-    pub inline fn updateMappings(str: [*:0]const u8) !void {
+    pub fn updateMappings(str: [*:0]const u8) !void {
         if (c.glfwUpdateGamepadMappings(str) != c.GLFW_TRUE) return error.UpdateGamepadMappings;
     }
 };
 
 pub const clipboard = struct {
-    pub inline fn set(window: Window, str: [*:0]const u8) !void {
+    pub fn set(window: Window, str: [*:0]const u8) !void {
         c.glfwSetClipboardString(window.toC(), str);
         try err.check();
     }
 
-    pub inline fn get(window: Window) ?[*:0]const u8 {
+    pub fn get(window: Window) ?[*:0]const u8 {
         return @ptrCast(c.glfwGetClipboardString(window.toC()));
     }
 };
@@ -318,7 +318,7 @@ pub const Key = enum(c_int) {
     };
 
     /// Same as 'glfwGetKey'
-    pub inline fn get(self: @This(), window: Window) State {
+    pub fn get(self: @This(), window: Window) State {
         const state = c.glfwGetKey(window.toC(), @intFromEnum(self));
         return .{
             .release = state == c.GLFW_RELEASE,
@@ -328,12 +328,12 @@ pub const Key = enum(c_int) {
     }
 
     /// Same as 'glfwGetKeyScancode'
-    pub inline fn toScancode(self: @This()) usize {
+    pub fn toScancode(self: @This()) usize {
         return @intCast(c.glfwGetKeyScancode(@intFromEnum(self)));
     }
 
     /// Same as 'glfwGetKeyName'
-    pub inline fn toStr(self: @This()) ?[*:0]const u8 {
+    pub fn toStr(self: @This()) ?[*:0]const u8 {
         return @ptrCast(c.glfwGetKeyName(@intFromEnum(self), @intCast(self.toScancode())) orelse return null);
     }
 };

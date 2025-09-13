@@ -14,7 +14,7 @@ pub fn Position(T: type) type {
         x: T,
         y: T,
         pub const Tuple = struct { T, T };
-        pub inline fn toTuple(self: @This()) Tuple {
+        pub fn toTuple(self: @This()) Tuple {
             return .{ self.x, self.y };
         }
     };
@@ -26,7 +26,7 @@ pub fn Size(T: type) type {
         height: T,
 
         pub const Tuple = struct { T, T };
-        pub inline fn toTuple(self: @This()) Tuple {
+        pub fn toTuple(self: @This()) Tuple {
             return .{ self.width, self.height };
         }
     };
@@ -39,7 +39,7 @@ pub const Image = struct {
 
     pub const CType = c.GLFWimage;
 
-    pub inline fn toC(self: @This()) CType {
+    pub fn toC(self: @This()) CType {
         return .{
             .width = @intCast(self.width),
             .height = @intCast(self.height),
@@ -67,31 +67,31 @@ pub const Version = struct {
     }
 };
 
-pub inline fn init() !void {
+pub fn init() !void {
     // c.glfwInitAllocator();
     if (err.errorFromInt(@intCast(c.glfwInit()))) |e| return e;
 }
 
 /// Same as 'glfwTerminate'
-pub inline fn deinit() void {
+pub fn deinit() void {
     c.glfwTerminate();
 }
 
 //c.glfwGetTime
 pub const time = struct {
-    pub inline fn get() f64 {
+    pub fn get() f64 {
         return c.glfwGetTime();
     }
 
-    pub inline fn set(t: f64) void {
+    pub fn set(t: f64) void {
         return c.glfwSetTime(t);
     }
 
-    pub inline fn getTimerValue() u64 {
+    pub fn getTimerValue() u64 {
         return c.glfwGetTimerValue();
     }
 
-    pub inline fn getTimerFrequency() u64 {
+    pub fn getTimerFrequency() u64 {
         return c.glfwGetTimerFrequency();
     }
 };
