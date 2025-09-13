@@ -168,7 +168,7 @@ pub const Window = *opaque {
         try err.check();
     }
 
-    pub fn getFramebufferSize(self: *@This()) !root.Size {
+    pub fn getFramebufferSize(self: *@This()) !root.Size(usize) {
         var width: c_int = undefined;
         var height: c_int = undefined;
         c.glfwGetFramebufferSize(self.toC(), &width, &height);
