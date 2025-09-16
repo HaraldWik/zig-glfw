@@ -110,7 +110,7 @@ pub const Attribute = enum(c_int) {
             .context_release_behavior,
             .context_no_error,
             .context_robustness,
-            => return error.OpenGLAttributesReadOnly,
+            => return error.OpenGLReadOnly,
         }
         c.glfwSetWindowAttrib(window.toC(), @intFromEnum(self), @intFromBool(value));
         try err.check();
@@ -119,6 +119,7 @@ pub const Attribute = enum(c_int) {
 
 pub fn init() !void {
     // c.glfwInitAllocator();
+    // c.GLFWallocatefun,
     if (err.errorFromInt(@intCast(c.glfwInit()))) |e| return e;
 }
 
@@ -127,7 +128,6 @@ pub fn deinit() void {
     c.glfwTerminate();
 }
 
-//c.glfwGetTime
 pub const time = struct {
     pub fn get() f64 {
         return c.glfwGetTime();
