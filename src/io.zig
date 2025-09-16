@@ -109,58 +109,75 @@ pub const mouse = struct {
     };
 };
 
-pub const joystick = struct {
-    pub const ID = enum(c_int) { _ };
+pub const Joystick = enum(c_int) {
+    @"1" = 0,
+    @"2" = 1,
+    @"3" = 2,
+    @"4" = 3,
+    @"5" = 4,
+    @"6" = 5,
+    @"7" = 6,
+    @"8" = 7,
+    @"9" = 8,
+    @"10" = 9,
+    @"11" = 11,
+    @"12" = 12,
+    @"13" = 13,
+    @"14" = 14,
+    @"15" = 15,
+    @"16" = 16,
+    _,
 
-    pub fn present(id: ID) bool {
-        return c.glfwJoystickPresent(@intFromEnum(id)) == c.GLFW_TRUE;
+    pub fn present(self: @This()) bool {
+        return c.glfwJoystickPresent(@intFromEnum(self)) == c.GLFW_TRUE;
     }
 
-    pub fn isGamepad(id: ID) bool {
-        return c.glfwJoystickIsGamepad(@intFromEnum(id)) == c.GLFW_TRUE;
+    pub fn isGamepad(self: @This()) bool {
+        return c.glfwJoystickIsGamepad(@intFromEnum(self)) == c.GLFW_TRUE;
     }
 
-    pub fn getName(id: ID) ?[*:0]const u8 {
-        return @ptrCast(c.glfwGetJoystickName(@intFromEnum(id)));
+    pub fn getName(self: @This()) ?[*:0]const u8 {
+        return @ptrCast(c.glfwGetJoystickName(@intFromEnum(self)));
     }
 
-    pub fn getGuid(id: ID) ?[*:0]const u8 {
-        return @ptrCast(c.glfwGetJoystickGUID(@intFromEnum(id)));
+    pub fn getGuid(self: @This()) ?[*:0]const u8 {
+        return @ptrCast(c.glfwGetJoystickGUID(@intFromEnum(self)));
     }
 
-    pub fn getAxes(id: ID) !?[]const f32 {
+    pub fn getAxes(self: @This()) !?[]const f32 {
         var count: c_int = undefined;
-        const axes = c.glfwGetJoystickAxes(@intFromEnum(id), &count);
+        const axes = c.glfwGetJoystickAxes(@intFromEnum(self), &count);
         try err.check();
         return if (count <= 0 or axes == null) null else @ptrCast(axes[0..@intCast(count)]);
     }
 
-    pub fn getButtons(id: ID) []const u8 {
+    pub fn getButtons(self: @This()) []const u8 {
         var count: c_int = undefined;
-        const buttons = c.glfwGetJoystickButtons(@ptrCast(id), &count);
+        const buttons = c.glfwGetJoystickButtons(@ptrCast(self), &count);
         return @ptrCast(buttons[0..@intCast(count)]);
     }
 
-    pub fn getHats(id: ID) []const u8 {
+    pub fn getHats(self: @This()) []const u8 {
         var count: c_int = undefined;
-        const hats = c.glfwGetJoystickHats(@ptrCast(id), &count);
+        const hats = c.glfwGetJoystickHats(@ptrCast(self), &count);
         return @ptrCast(hats[0..@intCast(count)]);
     }
 
-    pub fn setUserPtr(id: ID, ptr: *anyopaque) !void {
-        c.glfwSetJoystickUserPointer(@intFromEnum(id), ptr);
+    pub fn setUserPtr(self: @This(), ptr: *anyopaque) !void {
+        c.glfwSetJoystickUserPointer(@intFromEnum(self), ptr);
         try err.check();
     }
 
-    pub fn getUserPtr(id: ID) !?*anyopaque {
-        const ptr = c.glfwGetJoystickUserPointer(@intFromEnum(id)) orelse return null;
+    pub fn getUserPtr(self: @This()) !?*anyopaque {
+        const ptr = c.glfwGetJoystickUserPointer(@intFromEnum(self)) orelse return null;
         try err.check();
         return ptr;
     }
 };
 
-pub const gamepad = struct {
-    pub const ID = joystick.ID;
+pub const Gamepad = enum(c_int) {
+    _,
+
     pub const State = struct {
         pub const CType = c.GLFWgamepadstate;
 
@@ -192,13 +209,13 @@ pub const gamepad = struct {
         },
     };
 
-    pub fn getName(id: ID) ?[*:0]const u8 {
-        return c.glfwGetGamepadName(@intFromEnum(id));
+    pub fn getName(self: @This()) ?[*:0]const u8 {
+        return c.glfwGetGamepadName(@intFromEnum(self));
     }
 
-    pub fn getState(id: ID) ?State {
+    pub fn getState(self: @This()) ?State {
         var state: c.GLFWgamepadstate = undefined;
-        return if (c.glfwGetGamepadState(@intFromEnum(id), &state) != c.GLFW_TRUE) null else State{
+        return if (c.glfwGetGamepadState(@intFromEnum(self), &state) != c.GLFW_TRUE) null else State{
             .axis = .{
                 .left_x = state.axes[c.GLFW_GAMEPAD_AXIS_LEFT_X],
                 .left_y = state.axes[c.GLFW_GAMEPAD_AXIS_LEFT_Y],

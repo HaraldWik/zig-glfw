@@ -31,7 +31,7 @@ _build.zig_
 
 _main.zig_
 
-```rust
+```zig
 const std = @import("std");
 const glfw = @import("glfw");
 

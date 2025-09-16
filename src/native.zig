@@ -5,6 +5,8 @@ const c = @import("c");
 const err = @import("err.zig");
 
 pub const win32 = if (build_options.win32) struct {
+    pub const Window = std.os.windows.HWND;
+
     pub fn getMonitor(monitor: root.Monitor) ![*:0]const u8 {
         const m = c.glfwGetWin32Monitor(monitor.toC());
         try err.check();
@@ -17,7 +19,7 @@ pub const win32 = if (build_options.win32) struct {
         return @ptrCast(adapter);
     }
 
-    pub fn getWindow(window: root.Window) !std.os.windows.HWND {
+    pub fn getWindow(window: root.Window) !Window {
         const hwnd = c.glfwGetWin32Window(window.toC());
         try err.check();
         return @ptrCast(hwnd);
@@ -25,43 +27,35 @@ pub const win32 = if (build_options.win32) struct {
 } else @compileError("Add '.win32 = true' in dependency to expose win32");
 
 pub const cocoa = if (build_options.cocoa) struct {
-    pub const NSWindow = *opaque {};
+    pub const Monitor = enum(u32) { _ };
+    pub const Window = *opaque {};
 
-    pub fn getMonitor(monitor: root.Monitor) !u32 {
+    pub fn getMonitor(monitor: root.Monitor) !Monitor {
         const id = c.glfwGetCocoaMonitor(monitor.toC());
         try err.check();
-        return id;
+        return @enumFromInt(id);
     }
 
-    pub fn getWindow(window: root.Window) !NSWindow {
+    pub fn getWindow(window: root.Window) !Window {
         const id = c.glfwGetCocoaWindow(window.toC());
-        try err.check();
-        return @ptrCast(id);
-    }
-
-    pub fn getView(window: root.Window) !NSWindow {
-        const id = c.glfwGetCocoaView(window.toC());
         try err.check();
         return @ptrCast(id);
     }
 } else @compileError("Add '.cocoa = true' in dependency to expose cocoa");
 
 pub const x11 = if (build_options.x11) struct {
+    pub const Monitor = *opaque {};
+    pub const Winodw = *opaque {};
     pub const Display = *opaque {};
+    pub const Adapter = *opaque {};
 
-    pub fn getMonitor(monitor: root.Monitor) !*anyopaque {
+    pub fn getMonitor(monitor: root.Monitor) !Monitor {
         const m = c.glfwGetX11Adapter(monitor.toC());
         try err.check();
         return @ptrCast(m);
     }
 
-    pub fn getAdapter(monitor: root.Monitor) !*anyopaque {
-        const adapter = c.glfwGetX11Adapter(monitor.toC());
-        try err.check();
-        return @ptrCast(adapter);
-    }
-
-    pub fn getWindow(window: root.Window) !*anyopaque {
+    pub fn getWindow(window: root.Window) !Winodw {
         const w = c.glfwGetX11Window(window.toC());
         try err.check();
         return @ptrCast(w);
@@ -73,7 +67,13 @@ pub const x11 = if (build_options.x11) struct {
         return @ptrCast(display);
     }
 
-    pub fn getSelectionStr() [*:0]const u8 {
+    pub fn getAdapter(monitor: root.Monitor) !Adapter {
+        const adapter = c.glfwGetX11Adapter(monitor.toC());
+        try err.check();
+        return @ptrCast(adapter);
+    }
+
+    pub fn getSelectionStr() ?[*:0]const u8 {
         return @ptrCast(c.glfwGetX11SelectionString());
     }
 
@@ -85,14 +85,16 @@ pub const x11 = if (build_options.x11) struct {
 
 pub const wayland = if (build_options.wayland) struct {
     pub const Display = *opaque {};
+    pub const Monitor = *opaque {};
+    pub const Window = *opaque {};
 
-    pub fn getMonitor(monitor: root.Monitor) !*anyopaque {
+    pub fn getMonitor(monitor: root.Monitor) !Monitor {
         const m = c.glfwGetWaylandMonitor(monitor.toC());
         try err.check();
         return @ptrCast(m);
     }
 
-    pub fn getWindow(window: root.Window) !*anyopaque {
+    pub fn getWindow(window: root.Window) !Window {
         const w = c.glfwGetWaylandWindow(window.toC());
         try err.check();
         return @ptrCast(w);
@@ -106,9 +108,9 @@ pub const wayland = if (build_options.wayland) struct {
 } else @compileError("Add '.wayland = true' in dependency to expose wayland");
 
 pub const wgl = if (build_options.wgl) struct {
-    pub const HGLRC = *opaque {};
+    pub const Context = std.os.windows.HGLRC;
 
-    pub fn getContext(window: root.Window) !HGLRC {
+    pub fn getContext(window: root.Window) !Context {
         const ctx = c.glfwGetWGLContext(window.toC());
         try err.check();
         return @ptrCast(ctx);
@@ -116,9 +118,9 @@ pub const wgl = if (build_options.wgl) struct {
 } else @compileError("Add '.wgl = true' in dependency to expose web module");
 
 pub const nsgl = if (build_options.nsgl) struct {
-    pub const NSWindow = if (build_options.cocoa) cocoa.NSWindow else *opaque {};
+    pub const Context = if (build_options.cocoa) cocoa.Window else *opaque {};
 
-    pub fn getContext(window: root.Window) NSWindow {
+    pub fn getContext(window: root.Window) !Context {
         const ctx = c.glfwGetNSGLContext(window.toC());
         try err.check();
         return @ptrCast(ctx);
@@ -127,6 +129,7 @@ pub const nsgl = if (build_options.nsgl) struct {
 
 pub const glx = if (build_options.glx) struct {
     pub const Context = *opaque {};
+    pub const Window = *opaque {};
 
     pub fn getContext(window: root.Window) !Context {
         const ctx = c.glfwGetGLXContext(window.toC());
@@ -134,7 +137,7 @@ pub const glx = if (build_options.glx) struct {
         return @ptrCast(ctx);
     }
 
-    pub fn getWindow(window: root.Window) !*anyopaque {
+    pub fn getWindow(window: root.Window) !Window {
         const w = c.glfwGetGLXWindow(window.toC());
         try err.check();
         return @ptrCast(w);
@@ -166,15 +169,37 @@ pub const egl = if (build_options.egl) struct {
 
 pub const osmesa = if (build_options.osmesa) struct {
     pub const Context = *opaque {};
+    pub const DepthBuffer = struct { size: root.Size(usize), bytes_per_val: usize, buffer: [*]u8 };
+    pub const ColorBuffer = struct { size: root.Size(usize), format: usize, buffer: [*]u8 };
 
-    // TODO: Fix
-    pub const getColorBuffer = c.glfwGetOSMesaColorBuffer;
+    pub fn getColorBuffer(window: root.Window) !DepthBuffer {
+        var width: c_int = undefined;
+        var height: c_int = undefined;
+        var format: c_int = undefined;
+        var buffer: *anyopaque = undefined;
+        if (c.glfwGetOSMesaColorBuffer(window.toC(), &width, &height, &format, &buffer) != c.GLFW_TRUE) return error.GetColorBuffer;
+        return .{
+            .size = .{ .width = @intCast(width), .height = @intCast(height) },
+            .format = @intCast(format),
+            .buffer = @ptrCast(buffer),
+        };
+    }
 
-    // TODO: Fix
-    pub const getDepthBuffer = c.glfwGetOSMesaDepthBuffer;
+    pub fn getDepthBuffer(window: root.Window) !DepthBuffer {
+        var width: c_int = undefined;
+        var height: c_int = undefined;
+        var bytes_per_val: c_int = undefined;
+        var buffer: *anyopaque = undefined;
+        if (c.glfwGetOSMesaDepthBuffer(window.toC(), &width, &height, &bytes_per_val, &buffer) != c.GLFW_TRUE) return error.GetDepthBuffer;
+        return .{
+            .size = .{ .width = @intCast(width), .height = @intCast(height) },
+            .bytes_per_val = @intCast(bytes_per_val),
+            .buffer = @ptrCast(buffer),
+        };
+    }
 
     pub fn getContext(window: root.Window) !Context {
-        const ctx = c.glfwGetOSMesaColorBuffer(window.toC());
+        const ctx = c.glfwGetOSMesaContext(window.toC());
         try err.check();
         return @ptrCast(ctx);
     }
