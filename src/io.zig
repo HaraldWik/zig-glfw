@@ -2,7 +2,6 @@ const build_options = @import("build_options");
 const c = @import("c");
 const err = @import("err.zig");
 const root = @import("root.zig");
-const Window = @import("window.zig").Window;
 
 pub const Mode = enum(c_int) {
     cursor = c.GLFW_CURSOR,
@@ -11,11 +10,11 @@ pub const Mode = enum(c_int) {
     lock_key_mods = c.GLFW_LOCK_KEY_MODS,
     raw_mouse_motion = c.GLFW_RAW_MOUSE_MOTION,
 
-    pub fn get(self: @This(), window: Window) usize {
+    pub fn get(self: @This(), window: *root.Window) usize {
         return @intCast(c.glfwGetInputMode(window.toC(), @intFromEnum(self)));
     }
 
-    pub fn set(self: @This(), window: Window, value: usize) void {
+    pub fn set(self: @This(), window: *root.Window, value: usize) void {
         c.glfwSetInputMode(window.toC(), @intFromEnum(self), @intCast(value));
     }
 };
@@ -52,7 +51,7 @@ pub const mouse = struct {
         @"7" = c.GLFW_MOUSE_BUTTON_7,
         @"8" = c.GLFW_MOUSE_BUTTON_8,
 
-        pub fn get(button: @This(), window: Window) bool {
+        pub fn get(button: @This(), window: *root.Window) bool {
             return c.glfwGetMouseButton(window.toC(), @intFromEnum(button)) == c.GLFW_TRUE;
         }
     };
@@ -63,23 +62,23 @@ pub const mouse = struct {
         return c.glfwRawMouseMotionSupported() == c.GLFW_TRUE;
     }
 
-    pub const CursorShape = enum(c_int) {
-        arrow = c.GLFW_ARROW_CURSOR,
-        ibeam = c.GLFW_IBEAM_CURSOR,
-        crosshair = c.GLFW_CROSSHAIR_CURSOR,
-        hand = c.GLFW_HAND_CURSOR,
-        hresize = c.GLFW_HRESIZE_CURSOR,
-        vresize = c.GLFW_VRESIZE_CURSOR,
-    };
-
-    pub const Cursor = *opaque {
+    pub const Cursor = opaque {
         pub const CType = *c.GLFWcursor;
+
+        pub const Shape = enum(c_int) {
+            arrow = c.GLFW_ARROW_CURSOR,
+            ibeam = c.GLFW_IBEAM_CURSOR,
+            crosshair = c.GLFW_CROSSHAIR_CURSOR,
+            hand = c.GLFW_HAND_CURSOR,
+            hresize = c.GLFW_HRESIZE_CURSOR,
+            vresize = c.GLFW_VRESIZE_CURSOR,
+        };
 
         pub fn toC(self: *@This()) CType {
             return @ptrCast(self);
         }
 
-        pub fn init(@"type": union(enum) { standard: CursorShape, custom: struct { image: root.Image, hotspot: root.Position(usize) } }) !*@This() {
+        pub fn init(@"type": union(enum) { standard: Shape, custom: struct { image: root.Image, hotspot: root.Position(usize) } }) !*@This() {
             const cursor = switch (@"type") {
                 .standard => |shape| c.glfwCreateStandardCursor(@intFromEnum(shape)),
                 .custom => |custom| c.glfwCreateCursor(@ptrCast(&custom.image.toC()), custom.hotspot.x, custom.hotspot.y),
@@ -92,11 +91,11 @@ pub const mouse = struct {
             c.glfwDestroyCursor(self.toC());
         }
 
-        pub fn set(self: *@This(), window: Window) void {
+        pub fn set(self: *@This(), window: *root.Window) void {
             c.glfwSetCursor(window.toC(), self.toC());
         }
 
-        pub fn getPosition(window: Window) root.Position(f64) {
+        pub fn getPosition(window: *root.Window) root.Position(f64) {
             var x: f64 = undefined;
             var y: f64 = undefined;
             c.glfwGetCursorPos(window.toC(), &x, &y);
@@ -104,7 +103,7 @@ pub const mouse = struct {
             return .{ .x = x, .y = y };
         }
 
-        pub fn setPosition(window: Window, position: root.Position(f64)) !void {
+        pub fn setPosition(window: *root.Window, position: root.Position(f64)) !void {
             c.glfwSetCursorPos(window.toC(), @intCast(position.x), @intCast(position.y));
             try err.check();
         }
@@ -252,12 +251,12 @@ pub const Gamepad = enum(c_int) {
 };
 
 pub const clipboard = struct {
-    pub fn set(window: Window, str: [*:0]const u8) !void {
+    pub fn set(window: *root.Window, str: [*:0]const u8) !void {
         c.glfwSetClipboardString(window.toC(), str);
         try err.check();
     }
 
-    pub fn get(window: Window) ?[*:0]const u8 {
+    pub fn get(window: *root.Window) ?[*:0]const u8 {
         return @ptrCast(c.glfwGetClipboardString(window.toC()));
     }
 };
@@ -392,7 +391,7 @@ pub const Key = enum(c_int) {
     };
 
     /// Same as 'glfwGetKey'
-    pub fn get(self: @This(), window: Window) bool {
+    pub fn get(self: @This(), window: *root.Window) bool {
         return c.glfwGetKey(window.toC(), @intFromEnum(self)) == c.GLFW_PRESS;
     }
 

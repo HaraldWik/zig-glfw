@@ -39,7 +39,7 @@ pub fn main() !void {
     try glfw.init();
     defer glfw.deinit();
 
-    const window: glfw.Window = try .init(.{
+    const window: *glfw.Window = try .init(.{
         .title = "Hello, world!",
         .size = .{ .width = 900, .height = 800 },
     });
@@ -62,7 +62,7 @@ pub fn main() !void {
         glfw.c.glClearColor(0.1, 0.5, 0.3, 1.0);
         glfw.c.glClear(glfw.c.GL_COLOR_BUFFER_BIT);
 
-        if (glfw.io.Key.a.get(window).press) {
+        if (glfw.io.Key.a.get(window)) {
             std.debug.print("A\n", .{});
         }
 

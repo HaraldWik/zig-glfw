@@ -19,7 +19,7 @@ pub const win32 = if (build_options.win32) struct {
         return @ptrCast(adapter);
     }
 
-    pub fn getWindow(window: root.Window) !Window {
+    pub fn getWindow(window: *root.Window) !Window {
         const hwnd = c.glfwGetWin32Window(window.toC());
         try err.check();
         return @ptrCast(hwnd);
@@ -36,7 +36,7 @@ pub const cocoa = if (build_options.cocoa) struct {
         return @enumFromInt(id);
     }
 
-    pub fn getWindow(window: root.Window) !Window {
+    pub fn getWindow(window: *root.Window) !Window {
         const id = c.glfwGetCocoaWindow(window.toC());
         try err.check();
         return @ptrCast(id);
@@ -55,7 +55,7 @@ pub const x11 = if (build_options.x11) struct {
         return @ptrCast(m);
     }
 
-    pub fn getWindow(window: root.Window) !Winodw {
+    pub fn getWindow(window: *root.Window) !Winodw {
         const w = c.glfwGetX11Window(window.toC());
         try err.check();
         return @ptrCast(w);
@@ -94,7 +94,7 @@ pub const wayland = if (build_options.wayland) struct {
         return @ptrCast(m);
     }
 
-    pub fn getWindow(window: root.Window) !Window {
+    pub fn getWindow(window: *root.Window) !Window {
         const w = c.glfwGetWaylandWindow(window.toC());
         try err.check();
         return @ptrCast(w);
@@ -110,7 +110,7 @@ pub const wayland = if (build_options.wayland) struct {
 pub const wgl = if (build_options.wgl) struct {
     pub const Context = std.os.windows.HGLRC;
 
-    pub fn getContext(window: root.Window) !Context {
+    pub fn getContext(window: *root.Window) !Context {
         const ctx = c.glfwGetWGLContext(window.toC());
         try err.check();
         return @ptrCast(ctx);
@@ -120,7 +120,7 @@ pub const wgl = if (build_options.wgl) struct {
 pub const nsgl = if (build_options.nsgl) struct {
     pub const Context = if (build_options.cocoa) cocoa.Window else *opaque {};
 
-    pub fn getContext(window: root.Window) !Context {
+    pub fn getContext(window: *root.Window) !Context {
         const ctx = c.glfwGetNSGLContext(window.toC());
         try err.check();
         return @ptrCast(ctx);
@@ -131,13 +131,13 @@ pub const glx = if (build_options.glx) struct {
     pub const Context = *opaque {};
     pub const Window = *opaque {};
 
-    pub fn getContext(window: root.Window) !Context {
+    pub fn getContext(window: *root.Window) !Context {
         const ctx = c.glfwGetGLXContext(window.toC());
         try err.check();
         return @ptrCast(ctx);
     }
 
-    pub fn getWindow(window: root.Window) !Window {
+    pub fn getWindow(window: *root.Window) !Window {
         const w = c.glfwGetGLXWindow(window.toC());
         try err.check();
         return @ptrCast(w);
@@ -149,12 +149,12 @@ pub const egl = if (build_options.egl) struct {
     pub const Surface = *opaque {};
     pub const Display = *opaque {};
 
-    pub fn getContext(window: root.Window) !Context {
+    pub fn getContext(window: *root.Window) !Context {
         const ctx = c.glfwGetEGLContext(window.toC());
         try err.check();
         return @ptrCast(ctx);
     }
-    pub fn getSurface(window: root.Window) !Surface {
+    pub fn getSurface(window: *root.Window) !Surface {
         const w = c.glfwGetEGLSurface(window.toC());
         try err.check();
         return @ptrCast(w);
@@ -172,7 +172,7 @@ pub const osmesa = if (build_options.osmesa) struct {
     pub const DepthBuffer = struct { size: root.Size(usize), bytes_per_val: usize, buffer: [*]u8 };
     pub const ColorBuffer = struct { size: root.Size(usize), format: usize, buffer: [*]u8 };
 
-    pub fn getColorBuffer(window: root.Window) !DepthBuffer {
+    pub fn getColorBuffer(window: *root.Window) !DepthBuffer {
         var width: c_int = undefined;
         var height: c_int = undefined;
         var format: c_int = undefined;
@@ -185,7 +185,7 @@ pub const osmesa = if (build_options.osmesa) struct {
         };
     }
 
-    pub fn getDepthBuffer(window: root.Window) !DepthBuffer {
+    pub fn getDepthBuffer(window: *root.Window) !DepthBuffer {
         var width: c_int = undefined;
         var height: c_int = undefined;
         var bytes_per_val: c_int = undefined;
@@ -198,7 +198,7 @@ pub const osmesa = if (build_options.osmesa) struct {
         };
     }
 
-    pub fn getContext(window: root.Window) !Context {
+    pub fn getContext(window: *root.Window) !Context {
         const ctx = c.glfwGetOSMesaContext(window.toC());
         try err.check();
         return @ptrCast(ctx);

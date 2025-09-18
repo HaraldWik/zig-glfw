@@ -1,6 +1,6 @@
 .{
     .name = .zig_glfw,
-    .version = "0.0.0",
+    .version = "0.1.0",
     .fingerprint = 0xf3d4e9bfc3cfacbb,
     .minimum_zig_version = "0.16.0-dev.178+b1189ab03",
     .dependencies = .{},
