@@ -10,6 +10,7 @@ pub const vulkan = if (build_options.vulkan) @import("vulkan.zig") else @compile
 
 pub const Monitor = @import("monitor.zig").Monitor;
 pub const Window = @import("window.zig").Window;
+pub const WindowConfig = @import("window.zig").Config;
 
 pub fn Position(T: type) type {
     return struct {
