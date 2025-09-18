@@ -58,26 +58,28 @@ pub const mouse = struct {
     };
 
     pub fn rawSupported() bool {
+        (*Cursor).Shape;
+
         return c.glfwRawMouseMotionSupported() == c.GLFW_TRUE;
     }
 
+    pub const CursorShape = enum(c_int) {
+        arrow = c.GLFW_ARROW_CURSOR,
+        ibeam = c.GLFW_IBEAM_CURSOR,
+        crosshair = c.GLFW_CROSSHAIR_CURSOR,
+        hand = c.GLFW_HAND_CURSOR,
+        hresize = c.GLFW_HRESIZE_CURSOR,
+        vresize = c.GLFW_VRESIZE_CURSOR,
+    };
+
     pub const Cursor = *opaque {
         pub const CType = *c.GLFWcursor;
-
-        pub const Shape = enum(c_int) {
-            arrow = c.GLFW_ARROW_CURSOR,
-            ibeam = c.GLFW_IBEAM_CURSOR,
-            crosshair = c.GLFW_CROSSHAIR_CURSOR,
-            hand = c.GLFW_HAND_CURSOR,
-            hresize = c.GLFW_HRESIZE_CURSOR,
-            vresize = c.GLFW_VRESIZE_CURSOR,
-        };
 
         pub fn toC(self: *@This()) CType {
             return @ptrCast(self);
         }
 
-        pub fn init(@"type": union(enum) { standard: Shape, custom: struct { image: root.Image, hotspot: root.Position(usize) } }) !*@This() {
+        pub fn init(@"type": union(enum) { standard: CursorShape, custom: struct { image: root.Image, hotspot: root.Position(usize) } }) !*@This() {
             const cursor = switch (@"type") {
                 .standard => |shape| c.glfwCreateStandardCursor(@intFromEnum(shape)),
                 .custom => |custom| c.glfwCreateCursor(@ptrCast(&custom.image.toC()), custom.hotspot.x, custom.hotspot.y),
@@ -390,13 +392,8 @@ pub const Key = enum(c_int) {
     };
 
     /// Same as 'glfwGetKey'
-    pub fn get(self: @This(), window: Window) State {
-        const state = c.glfwGetKey(window.toC(), @intFromEnum(self));
-        return .{
-            .release = state == c.GLFW_RELEASE,
-            .press = state == c.GLFW_PRESS,
-            .repeat = state == c.GLFW_REPEAT,
-        };
+    pub fn get(self: @This(), window: Window) bool {
+        return c.glfwGetKey(window.toC(), @intFromEnum(self)) == c.GLFW_PRESS;
     }
 
     /// Same as 'glfwGetKeyScancode'
