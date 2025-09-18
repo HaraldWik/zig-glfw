@@ -36,16 +36,15 @@ pub fn Size(T: type) type {
 }
 
 pub const Image = struct {
-    width: usize,
-    height: usize,
+    size: Size(usize),
     pixels: [*]u8,
 
     pub const CType = c.GLFWimage;
 
     pub fn toC(self: @This()) CType {
         return .{
-            .width = @intCast(self.width),
-            .height = @intCast(self.height),
+            .width = @intCast(self.size.width),
+            .height = @intCast(self.size.height),
             .pixels = @ptrCast(self.pixels),
         };
     }
@@ -63,6 +62,24 @@ pub const version = struct {
 
     pub fn getStr() [*:0]const u8 {
         return @ptrCast(c.glfwGetVersionString());
+    }
+};
+
+pub const time = struct {
+    pub fn get() f64 {
+        return c.glfwGetTime();
+    }
+
+    pub fn set(t: f64) void {
+        return c.glfwSetTime(t);
+    }
+
+    pub fn getTimerValue() u64 {
+        return c.glfwGetTimerValue();
+    }
+
+    pub fn getTimerFrequency() u64 {
+        return c.glfwGetTimerFrequency();
     }
 };
 
@@ -92,6 +109,7 @@ pub const Attribute = enum(c_int) {
     context_release_behavior = c.GLFW_CONTEXT_RELEASE_BEHAVIOR,
     context_no_error = c.GLFW_CONTEXT_NO_ERROR,
     context_robustness = c.GLFW_CONTEXT_ROBUSTNESS,
+    _,
 
     pub fn get(self: @This(), window: Window) usize {
         return @intCast(c.glfwGetWindowAttrib(window.toC(), @intFromEnum(self)));
@@ -127,21 +145,3 @@ pub fn init() !void {
 pub fn deinit() void {
     c.glfwTerminate();
 }
-
-pub const time = struct {
-    pub fn get() f64 {
-        return c.glfwGetTime();
-    }
-
-    pub fn set(t: f64) void {
-        return c.glfwSetTime(t);
-    }
-
-    pub fn getTimerValue() u64 {
-        return c.glfwGetTimerValue();
-    }
-
-    pub fn getTimerFrequency() u64 {
-        return c.glfwGetTimerFrequency();
-    }
-};
