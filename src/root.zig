@@ -1,3 +1,5 @@
+const std = @import("std");
+
 pub const build_options = @import("build_options");
 pub const c = @import("c");
 pub const err = @import("err.zig");
@@ -47,12 +49,8 @@ pub const Image = struct {
     }
 };
 
-pub const Version = struct {
-    major: usize,
-    minor: usize,
-    patch: usize,
-
-    pub fn get() @This() {
+pub const version = struct {
+    pub fn get() std.SemanticVersion {
         var major: c_int = undefined;
         var minor: c_int = undefined;
         var patch: c_int = undefined;

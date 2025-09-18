@@ -11,7 +11,7 @@ pub fn main() !void {
     });
     defer window.deinit();
 
-    std.log.info("{any}, {s}", .{ glfw.Version.get(), glfw.Version.getStr() });
+    std.log.info("{any}, {s}", .{ glfw.version.get(), glfw.version.getStr() });
 
     glfw.opengl.makeContextCurrent(window);
     defer glfw.opengl.makeContextCurrent(null);

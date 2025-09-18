@@ -23,7 +23,7 @@ pub fn build(b: *std.Build) void {
             .{ .name = "c", .module = c },
         },
     });
-    mod.linkSystemLibrary("GLFW", .{});
+    mod.linkSystemLibrary("glfw", .{});
 
     const win32 = b.option(bool, "win32", "GLFW_EXPOSE_NATIVE_WIN32") orelse (target.result.os.tag == .windows);
     const cocoa = b.option(bool, "cocoa", "GLFW_EXPOSE_NATIVE_COCOA") orelse (target.result.os.tag == .macos);
