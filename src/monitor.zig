@@ -3,19 +3,19 @@ const root = @import("root.zig");
 const c = @import("c");
 const err = @import("err.zig");
 
+pub const VideoMode = struct {
+    pub const CType = c.GLFWvidmode;
+
+    width: isize,
+    height: isize,
+    redBits: isize,
+    greenBits: isize,
+    blueBits: isize,
+    refreshRate: isize,
+};
+
 pub const Monitor = *opaque {
     pub const CType = *c.GLFWmonitor;
-
-    pub const VideoMode = struct {
-        pub const CType = c.GLFWvidmode;
-
-        width: isize,
-        height: isize,
-        redBits: isize,
-        greenBits: isize,
-        blueBits: isize,
-        refreshRate: isize,
-    };
 
     pub fn toC(self: *@This()) CType {
         return @ptrCast(self);

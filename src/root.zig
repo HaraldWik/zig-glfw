@@ -9,6 +9,7 @@ pub const opengl = if (!build_options.none) @import("opengl.zig") else @compileE
 pub const vulkan = if (build_options.vulkan) @import("vulkan.zig") else @compileError("Add '.vulkan = true' in dependency to use vulkan module");
 
 pub const Monitor = @import("monitor.zig").Monitor;
+pub const MonitorVideoMode = @import("monitor.zig").VideoMode;
 pub const Window = @import("window.zig").Window;
 pub const WindowConfig = @import("window.zig").Config;
 
