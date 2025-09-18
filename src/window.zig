@@ -158,8 +158,14 @@ pub const Window = *opaque {
         try err.check();
     }
 
-    pub fn setSizeLimit(self: *@This(), min: root.Size(usize), max: root.Size(usize)) !void {
-        c.glfwSetWindowSizeLimits(self.toC(), @intCast(min.width), @intCast(min.height), @intCast(max.width), @intCast(max.height));
+    pub fn setSizeLimit(self: *@This(), min: ?root.Size(usize), max: ?root.Size(usize)) !void {
+        c.glfwSetWindowSizeLimits(
+            self.toC(),
+            if (min != null) @intCast(min.?.width) else c.GLFW_DONT_CARE,
+            if (min != null) @intCast(min.?.height) else c.GLFW_DONT_CARE,
+            if (max != null) @intCast(max.?.width) else c.GLFW_DONT_CARE,
+            if (max != null) @intCast(max.?.height) else c.GLFW_DONT_CARE,
+        );
         try err.check();
     }
 
