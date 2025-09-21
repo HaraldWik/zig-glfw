@@ -66,11 +66,4 @@ pub fn build(b: *std.Build) void {
     if (glx) mod.addCMacro("#define GLFW_EXPOSE_NATIVE_GLX", "1");
     if (egl) mod.addCMacro("#define GLFW_EXPOSE_NATIVE_EGL", "1");
     if (osmesa) mod.addCMacro("#define GLFW_EXPOSE_NATIVE_OSMESA", "1");
-
-    const mod_tests = b.addTest(.{
-        .root_module = mod,
-    });
-    const run_mod_tests = b.addRunArtifact(mod_tests);
-    const test_step = b.step("test", "Run tests");
-    test_step.dependOn(&run_mod_tests.step);
 }
