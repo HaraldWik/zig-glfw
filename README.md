@@ -4,7 +4,9 @@ btw, handmade...
 
 ## Installation
 
-`zig fetch --save git+https://github.com/HaraldWik/zig-glfw`
+```
+zig fetch --save git+https://github.com/HaraldWik/zig-glfw
+```
 
 _build.zig_
 
