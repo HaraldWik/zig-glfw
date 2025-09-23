@@ -24,7 +24,7 @@ pub const win32 = if (build_options.win32) struct {
         try err.check();
         return @ptrCast(hwnd);
     }
-} else @compileError("Add '.win32 = true' in dependency to expose win32");
+} else @compileError("add '.win32 = true' in dependency to expose win32");
 
 pub const cocoa = if (build_options.cocoa) struct {
     pub const Monitor = enum(u32) { _ };
@@ -41,7 +41,7 @@ pub const cocoa = if (build_options.cocoa) struct {
         try err.check();
         return @ptrCast(id);
     }
-} else @compileError("Add '.cocoa = true' in dependency to expose cocoa");
+} else @compileError("add '.cocoa = true' in dependency to expose cocoa");
 
 pub const x11 = if (build_options.x11) struct {
     pub const Monitor = *opaque {};
@@ -81,7 +81,7 @@ pub const x11 = if (build_options.x11) struct {
         c.glfwSetX11SelectionString(@ptrCast(str));
         try err.check();
     }
-} else @compileError("Add '.x11 = true' in dependency to expose x11");
+} else @compileError("add '.x11 = true' in dependency to expose x11");
 
 pub const wayland = if (build_options.wayland) struct {
     pub const Display = *opaque {};
@@ -105,7 +105,7 @@ pub const wayland = if (build_options.wayland) struct {
         try err.check();
         return @ptrCast(display);
     }
-} else @compileError("Add '.wayland = true' in dependency to expose wayland");
+} else @compileError("add '.wayland = true' in dependency to expose wayland");
 
 pub const wgl = if (build_options.wgl) struct {
     pub const Context = std.os.windows.HGLRC;
@@ -115,7 +115,7 @@ pub const wgl = if (build_options.wgl) struct {
         try err.check();
         return @ptrCast(ctx);
     }
-} else @compileError("Add '.wgl = true' in dependency to expose web module");
+} else @compileError("add '.wgl = true' in dependency to expose web module");
 
 pub const nsgl = if (build_options.nsgl) struct {
     pub const Context = if (build_options.cocoa) cocoa.Window else *opaque {};
@@ -125,7 +125,7 @@ pub const nsgl = if (build_options.nsgl) struct {
         try err.check();
         return @ptrCast(ctx);
     }
-} else @compileError("Add '.nsgl = true' in dependency to expose nsgl");
+} else @compileError("add '.nsgl = true' in dependency to expose nsgl");
 
 pub const glx = if (build_options.glx) struct {
     pub const Context = *opaque {};
@@ -142,7 +142,7 @@ pub const glx = if (build_options.glx) struct {
         try err.check();
         return @ptrCast(w);
     }
-} else @compileError("Add '.glx = true' in dependency to expose glx");
+} else @compileError("add '.glx = true' in dependency to expose glx");
 
 pub const egl = if (build_options.egl) struct {
     pub const Context = *opaque {};
@@ -165,7 +165,7 @@ pub const egl = if (build_options.egl) struct {
         try err.check();
         return @ptrCast(display);
     }
-} else @compileError("Add '.egl = true' in dependency to expose egl");
+} else @compileError("add '.egl = true' in dependency to expose egl");
 
 pub const osmesa = if (build_options.osmesa) struct {
     pub const Context = *opaque {};
@@ -203,4 +203,4 @@ pub const osmesa = if (build_options.osmesa) struct {
         try err.check();
         return @ptrCast(ctx);
     }
-} else @compileError("Add '.osmesa = true' in dependency to expose osmesa");
+} else @compileError("add '.osmesa = true' in dependency to expose osmesa");

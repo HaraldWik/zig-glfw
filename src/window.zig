@@ -9,48 +9,152 @@ const Monitor = @import("monitor.zig").Monitor;
 pub const Window = opaque {
     pub const CType = *c.GLFWwindow;
 
+    pub const Hint = union(enum) {
+        resizable: bool,
+        visible: bool,
+        decorated: bool,
+        red_bits: u8,
+        green_bits: u8,
+        blue_bits: u8,
+        alpha_bits: u8,
+        depth_bits: u8,
+        stencil_bits: u8,
+        accum_red_bits: u8,
+        accum_green_bits: u8,
+        accum_blue_bits: u8,
+        accum_alpha_bits: u8,
+        aux_buffers: u8,
+        samples: u8,
+        refresh_rate: usize,
+        stereo: bool,
+        srgb_capable: bool,
+        client_api: enum(c_int) { opengl = c.GLFW_OPENGL_API, opengl_es = c.GLFW_OPENGL_ES_API },
+        context_version_major: usize,
+        context_version_minor: usize,
+        context_robustness: enum(c_int) { no = c.GLFW_NO_ROBUSTNESS, no_reset_notification = c.GLFW_NO_RESET_NOTIFICATION, lose_on_reset = c.GLFW_LOSE_CONTEXT_ON_RESET },
+        opengl_forward_compat: bool,
+        opengl_debug_context: bool,
+        opengl_profile: enum(c_int) { any = c.GLFW_OPENGL_ANY_PROFILE, compatibility = c.GLFW_OPENGL_COMPAT_PROFILE, core = c.GLFW_OPENGL_CORE_PROFILE },
+
+        pub fn toC(self: @This()) c_int {
+            return switch (self) {
+                .resizable => c.GLFW_RESIZABLE,
+                .visible => c.GLFW_VISIBLE,
+                .decorated => c.GLFW_DECORATED,
+                .red_bits => c.GLFW_RED_BITS,
+                .green_bits => c.GLFW_GREEN_BITS,
+                .blue_bits => c.GLFW_BLUE_BITS,
+                .alpha_bits => c.GLFW_ALPHA_BITS,
+                .depth_bits => c.GLFW_DEPTH_BITS,
+                .stencil_bits => c.GLFW_STENCIL_BITS,
+                .accum_red_bits => c.GLFW_ACCUM_RED_BITS,
+                .accum_green_bits => c.GLFW_ACCUM_GREEN_BITS,
+                .accum_blue_bits => c.GLFW_ACCUM_BLUE_BITS,
+                .accum_alpha_bits => c.GLFW_ACCUM_ALPHA_BITS,
+                .aux_buffers => c.GLFW_AUX_BUFFERS,
+                .samples => c.GLFW_SAMPLES,
+                .refresh_rate => c.GLFW_REFRESH_RATE,
+                .stereo => c.GLFW_STEREO,
+                .srgb_capable => c.GLFW_SRGB_CAPABLE,
+                .client_api => c.GLFW_CLIENT_API,
+                .context_version_major => c.GLFW_CONTEXT_VERSION_MAJOR,
+                .context_version_minor => c.GLFW_CONTEXT_VERSION_MINOR,
+                .context_robustness => c.GLFW_CONTEXT_ROBUSTNESS,
+                .opengl_forward_compat => c.GLFW_OPENGL_FORWARD_COMPAT,
+                .opengl_debug_context => c.GLFW_OPENGL_DEBUG_CONTEXT,
+                .opengl_profile => c.GLFW_OPENGL_PROFILE,
+            };
+        }
+
+        pub fn set(self: @This()) void {
+            switch (self) {
+                .resizable => |hint| c.glfwWindowHint(self.toC(), @intFromBool(hint)),
+                .visible => |hint| c.glfwWindowHint(self.toC(), @intFromBool(hint)),
+                .decorated => |hint| c.glfwWindowHint(self.toC(), @intFromBool(hint)),
+                .red_bits => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .green_bits => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .blue_bits => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .alpha_bits => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .depth_bits => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .stencil_bits => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .accum_red_bits => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .accum_green_bits => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .accum_blue_bits => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .accum_alpha_bits => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .aux_buffers => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .samples => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .refresh_rate => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .stereo => |hint| c.glfwWindowHint(self.toC(), @intFromBool(hint)),
+                .srgb_capable => |hint| c.glfwWindowHint(self.toC(), @intFromBool(hint)),
+                .client_api => |hint| c.glfwWindowHint(self.toC(), @intFromEnum(hint)),
+                .context_version_major => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .context_version_minor => |hint| c.glfwWindowHint(self.toC(), @intCast(hint)),
+                .context_robustness => |hint| c.glfwWindowHint(self.toC(), @intFromEnum(hint)),
+                .opengl_forward_compat => |hint| c.glfwWindowHint(self.toC(), @intFromBool(hint)),
+                .opengl_debug_context => |hint| c.glfwWindowHint(self.toC(), @intFromBool(hint)),
+                .opengl_profile => |hint| c.glfwWindowHint(self.toC(), @intFromEnum(hint)),
+            }
+        }
+    };
+
+    pub const Attribute = enum(c_int) {
+        focused = c.GLFW_FOCUSED,
+        iconified = c.GLFW_ICONIFIED,
+        maximized = c.GLFW_MAXIMIZED,
+        hovered = c.GLFW_HOVERED,
+        visible = c.GLFW_VISIBLE,
+        resizable = c.GLFW_RESIZABLE,
+        decorated = c.GLFW_DECORATED,
+        auto_iconify = c.GLFW_AUTO_ICONIFY,
+        floating = c.GLFW_FLOATING,
+        transparent_framebuffer = c.GLFW_TRANSPARENT_FRAMEBUFFER,
+        focus_on_show = c.GLFW_FOCUS_ON_SHOW,
+
+        /// Read-only
+        client_api = c.GLFW_CLIENT_API,
+        context_creation_api = c.GLFW_CONTEXT_CREATION_API,
+        context_version_major = c.GLFW_CONTEXT_VERSION_MAJOR,
+        context_version_minor = c.GLFW_CONTEXT_VERSION_MINOR,
+        context_revision = c.GLFW_CONTEXT_REVISION,
+        opengl_forward_compat = c.GLFW_OPENGL_FORWARD_COMPAT,
+        opengl_debug_context = c.GLFW_OPENGL_DEBUG_CONTEXT,
+        opengl_profile = c.GLFW_OPENGL_PROFILE,
+        context_release_behavior = c.GLFW_CONTEXT_RELEASE_BEHAVIOR,
+        context_no_error = c.GLFW_CONTEXT_NO_ERROR,
+        context_robustness = c.GLFW_CONTEXT_ROBUSTNESS,
+
+        _,
+
+        pub fn get(self: @This(), window: *Window) usize {
+            return @intCast(c.glfwGetWindowAttrib(window.toC(), @intFromEnum(self)));
+        }
+
+        pub fn set(self: @This(), window: *Window, value: bool) !void {
+            switch (self) {
+                .client_api,
+                .context_creation_api,
+                .context_version_major,
+                .context_version_minor,
+                .context_revision,
+                .opengl_forward_compat,
+                .opengl_debug_context,
+                .opengl_profile,
+                .context_release_behavior,
+                .context_no_error,
+                .context_robustness,
+                => return error.OpenGLReadOnly,
+                else => {},
+            }
+            c.glfwSetWindowAttrib(window.toC(), @intFromEnum(self), @intFromBool(value));
+            try err.check();
+        }
+    };
+
     pub const Config = struct {
         title: [*:0]const u8,
         size: root.Size(usize),
         monitor: ?*Monitor = null,
         share: ?*Window = null,
-        hints: struct {
-            resizable: ?bool = null,
-            visible: ?bool = null,
-            decorated: ?bool = null,
-            focused: ?bool = null,
-            auto_iconify: ?bool = null,
-            floating: ?bool = null,
-            maximized: ?bool = null,
-            center_cursor: ?bool = null,
-            transparent_framebuffer: ?bool = null,
-            focus_on_show: ?bool = null,
-            scale_to_monitor: ?bool = null,
-            red_bits: ?bool = null,
-            green_bits: ?bool = null,
-            blue_bits: ?bool = null,
-            alpha_bits: ?bool = null,
-            depth_bits: ?bool = null,
-            stencil_bits: ?bool = null,
-            accum_red_bits: ?bool = null,
-            accum_green_bits: ?bool = null,
-            accum_blue_bits: ?bool = null,
-            accum_alpha_bits: ?bool = null,
-            aux_buffers: ?bool = null,
-            stereo: ?bool = null,
-            samples: ?bool = null,
-            srgb_capable: ?bool = null,
-            doublebuffer: ?bool = null,
-            client_api: ?bool = null,
-            context_version_major: ?bool = null,
-            context_version_minor: ?bool = null,
-            opengl_forward_compat: ?bool = null,
-            opengl_debug_context: ?bool = null,
-            opengl_profile: ?bool = null,
-            context_robustness: ?bool = null,
-            context_release_behavior: ?bool = null,
-            context_no_error: ?bool = null,
-        } = .{},
     };
 
     pub fn toC(self: *@This()) CType {
@@ -58,42 +162,6 @@ pub const Window = opaque {
     }
 
     pub fn init(config: Config) !*@This() {
-        if (config.hints.resizable) |hint| c.glfwWindowHint(c.GLFW_RESIZABLE, @intFromBool(hint));
-        if (config.hints.visible) |hint| c.glfwWindowHint(c.GLFW_VISIBLE, @intFromBool(hint));
-        if (config.hints.decorated) |hint| c.glfwWindowHint(c.GLFW_DECORATED, @intFromBool(hint));
-        if (config.hints.focused) |hint| c.glfwWindowHint(c.GLFW_FOCUSED, @intFromBool(hint));
-        if (config.hints.auto_iconify) |hint| c.glfwWindowHint(c.GLFW_AUTO_ICONIFY, @intFromBool(hint));
-        if (config.hints.floating) |hint| c.glfwWindowHint(c.GLFW_FLOATING, @intFromBool(hint));
-        if (config.hints.maximized) |hint| c.glfwWindowHint(c.GLFW_MAXIMIZED, @intFromBool(hint));
-        if (config.hints.center_cursor) |hint| c.glfwWindowHint(c.GLFW_CENTER_CURSOR, @intFromBool(hint));
-        if (config.hints.transparent_framebuffer) |hint| c.glfwWindowHint(c.GLFW_TRANSPARENT_FRAMEBUFFER, @intFromBool(hint));
-        if (config.hints.focus_on_show) |hint| c.glfwWindowHint(c.GLFW_FOCUS_ON_SHOW, @intFromBool(hint));
-        if (config.hints.scale_to_monitor) |hint| c.glfwWindowHint(c.GLFW_SCALE_TO_MONITOR, @intFromBool(hint));
-        if (config.hints.red_bits) |hint| c.glfwWindowHint(c.GLFW_RED_BITS, @intFromBool(hint));
-        if (config.hints.green_bits) |hint| c.glfwWindowHint(c.GLFW_GREEN_BITS, @intFromBool(hint));
-        if (config.hints.blue_bits) |hint| c.glfwWindowHint(c.GLFW_BLUE_BITS, @intFromBool(hint));
-        if (config.hints.alpha_bits) |hint| c.glfwWindowHint(c.GLFW_ALPHA_BITS, @intFromBool(hint));
-        if (config.hints.depth_bits) |hint| c.glfwWindowHint(c.GLFW_DEPTH_BITS, @intFromBool(hint));
-        if (config.hints.stencil_bits) |hint| c.glfwWindowHint(c.GLFW_STENCIL_BITS, @intFromBool(hint));
-        if (config.hints.accum_red_bits) |hint| c.glfwWindowHint(c.GLFW_ACCUM_RED_BITS, @intFromBool(hint));
-        if (config.hints.accum_green_bits) |hint| c.glfwWindowHint(c.GLFW_ACCUM_GREEN_BITS, @intFromBool(hint));
-        if (config.hints.accum_blue_bits) |hint| c.glfwWindowHint(c.GLFW_ACCUM_BLUE_BITS, @intFromBool(hint));
-        if (config.hints.accum_alpha_bits) |hint| c.glfwWindowHint(c.GLFW_ACCUM_ALPHA_BITS, @intFromBool(hint));
-        if (config.hints.aux_buffers) |hint| c.glfwWindowHint(c.GLFW_AUX_BUFFERS, @intFromBool(hint));
-        if (config.hints.stereo) |hint| c.glfwWindowHint(c.GLFW_STEREO, @intFromBool(hint));
-        if (config.hints.samples) |hint| c.glfwWindowHint(c.GLFW_SAMPLES, @intFromBool(hint));
-        if (config.hints.srgb_capable) |hint| c.glfwWindowHint(c.GLFW_SRGB_CAPABLE, @intFromBool(hint));
-        if (config.hints.doublebuffer) |hint| c.glfwWindowHint(c.GLFW_DOUBLEBUFFER, @intFromBool(hint));
-        if (config.hints.client_api) |hint| c.glfwWindowHint(c.GLFW_CLIENT_API, @intFromBool(hint));
-        if (config.hints.context_version_major) |hint| c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MAJOR, @intFromBool(hint));
-        if (config.hints.context_version_minor) |hint| c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MINOR, @intFromBool(hint));
-        if (config.hints.opengl_forward_compat) |hint| c.glfwWindowHint(c.GLFW_OPENGL_FORWARD_COMPAT, @intFromBool(hint));
-        if (config.hints.opengl_debug_context) |hint| c.glfwWindowHint(c.GLFW_OPENGL_DEBUG_CONTEXT, @intFromBool(hint));
-        if (config.hints.opengl_profile) |hint| c.glfwWindowHint(c.GLFW_OPENGL_PROFILE, @intFromBool(hint));
-        if (config.hints.context_robustness) |hint| c.glfwWindowHint(c.GLFW_CONTEXT_ROBUSTNESS, @intFromBool(hint));
-        if (config.hints.context_release_behavior) |hint| c.glfwWindowHint(c.GLFW_CONTEXT_RELEASE_BEHAVIOR, @intFromBool(hint));
-        if (config.hints.context_no_error) |hint| c.glfwWindowHint(c.GLFW_CONTEXT_NO_ERROR, @intFromBool(hint));
-
         const window = c.glfwCreateWindow(
             @intCast(config.size.width),
             @intCast(config.size.height),

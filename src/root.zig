@@ -5,8 +5,8 @@ pub const c = @import("c");
 pub const err = @import("err.zig");
 pub const native = @import("native.zig");
 pub const io = @import("io.zig");
-pub const opengl = if (!build_options.none) @import("opengl.zig") else @compileError("Add '.none = false' in dependency to use opengl module");
-pub const vulkan = if (build_options.vulkan) @import("vulkan.zig") else @compileError("Add '.vulkan = true' in dependency to use vulkan module");
+pub const opengl = if (!build_options.none) @import("opengl.zig") else @compileError("add '.none = false' in dependency to use opengl module");
+pub const vulkan = if (build_options.vulkan) @import("vulkan.zig") else @compileError("add '.vulkan = true' in dependency to use vulkan module");
 
 pub const Monitor = @import("monitor.zig").Monitor;
 pub const Window = @import("window.zig").Window;
@@ -78,59 +78,6 @@ pub const time = struct {
 
     pub fn getTimerFrequency() u64 {
         return c.glfwGetTimerFrequency();
-    }
-};
-
-pub const Attribute = enum(c_int) {
-    focused = c.GLFW_FOCUSED,
-    iconified = c.GLFW_ICONIFIED,
-    maximized = c.GLFW_MAXIMIZED,
-    hovered = c.GLFW_HOVERED,
-    visible = c.GLFW_VISIBLE,
-    resizable = c.GLFW_RESIZABLE,
-    decorated = c.GLFW_DECORATED,
-    auto_iconify = c.GLFW_AUTO_ICONIFY,
-    floating = c.GLFW_FLOATING,
-    transparent_framebuffer = c.GLFW_TRANSPARENT_FRAMEBUFFER,
-    focus_on_show = c.GLFW_FOCUS_ON_SHOW,
-    mouse_passthrough = c.GLFW_MOUSE_PASSTHROUGH,
-
-    /// Read-only
-    client_api = c.GLFW_CLIENT_API,
-    context_creation_api = c.GLFW_CONTEXT_CREATION_API,
-    context_version_major = c.GLFW_CONTEXT_VERSION_MAJOR,
-    context_version_minor = c.GLFW_CONTEXT_VERSION_MINOR,
-    context_revision = c.GLFW_CONTEXT_REVISION,
-    opengl_forward_compat = c.GLFW_OPENGL_FORWARD_COMPAT,
-    opengl_debug_context = c.GLFW_OPENGL_DEBUG_CONTEXT,
-    opengl_profile = c.GLFW_OPENGL_PROFILE,
-    context_release_behavior = c.GLFW_CONTEXT_RELEASE_BEHAVIOR,
-    context_no_error = c.GLFW_CONTEXT_NO_ERROR,
-    context_robustness = c.GLFW_CONTEXT_ROBUSTNESS,
-
-    _,
-
-    pub fn get(self: @This(), window: Window) usize {
-        return @intCast(c.glfwGetWindowAttrib(window.toC(), @intFromEnum(self)));
-    }
-
-    pub fn set(self: @This(), window: Window, value: bool) !void {
-        switch (self) {
-            .client_api,
-            .context_creation_api,
-            .context_version_major,
-            .context_version_minor,
-            .context_revision,
-            .opengl_forward_compat,
-            .opengl_debug_context,
-            .opengl_profile,
-            .context_release_behavior,
-            .context_no_error,
-            .context_robustness,
-            => return error.OpenGLReadOnly,
-        }
-        c.glfwSetWindowAttrib(window.toC(), @intFromEnum(self), @intFromBool(value));
-        try err.check();
     }
 };
 
