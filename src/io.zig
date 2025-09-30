@@ -99,7 +99,6 @@ pub const mouse = struct {
             var x: f64 = undefined;
             var y: f64 = undefined;
             c.glfwGetCursorPos(window.toC(), &x, &y);
-            try err.check();
             return .{ .x = x, .y = y };
         }
 
