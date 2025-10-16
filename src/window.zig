@@ -28,7 +28,7 @@ pub const Window = opaque {
         refresh_rate: usize,
         stereo: bool,
         srgb_capable: bool,
-        client_api: enum(c_int) { opengl = c.GLFW_OPENGL_API, opengl_es = c.GLFW_OPENGL_ES_API },
+        client_api: enum(c_int) { opengl = c.GLFW_OPENGL_API, opengl_es = c.GLFW_OPENGL_ES_API, none = 0, _ },
         context_version_major: usize,
         context_version_minor: usize,
         context_robustness: enum(c_int) { no = c.GLFW_NO_ROBUSTNESS, no_reset_notification = c.GLFW_NO_RESET_NOTIFICATION, lose_on_reset = c.GLFW_LOSE_CONTEXT_ON_RESET },
