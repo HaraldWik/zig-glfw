@@ -1,6 +1,10 @@
 const std = @import("std");
 const c = @import("c");
 
+pub fn callback(code: c_int, desc: [*:0]const u8) callconv(.c) void {
+    std.log.err("{d}: {s}", .{ code, desc });
+}
+
 pub fn getError() struct { usize, ?[*:0]const u8 } {
     var description: [*c]const u8 = undefined;
     const code = c.glfwGetError(&description);
