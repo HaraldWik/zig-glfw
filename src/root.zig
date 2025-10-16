@@ -85,8 +85,7 @@ pub fn init() !void {
     // c.glfwInitAllocator();
     // c.GLFWallocatefun,
     if (err.errorFromInt(@intCast(c.glfwInit()))) |e| return e;
-    c.glfwSetErrorCallback(err.callback);
-    try err.check();
+    _ = c.glfwSetErrorCallback(err.callback);
 }
 
 /// Same as 'glfwTerminate'
