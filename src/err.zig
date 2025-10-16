@@ -1,7 +1,7 @@
 const std = @import("std");
 const c = @import("c");
 
-pub fn callback(code: c_int, desc: [*:0]const u8) callconv(.c) void {
+pub fn callback(code: c_int, desc: [*c]const u8) callconv(.c) void {
     std.log.err("{d}: {s}", .{ code, desc });
 }
 
