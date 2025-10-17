@@ -6,7 +6,7 @@ const Instance = *opaque {};
 const PhysicalDevice = *opaque {};
 const Surface = *opaque {};
 
-pub extern fn glfwCreateWindowSurface(instance: Instance, user_data: *anyopaque, surface: *Surface) c_int;
+pub extern fn glfwCreateWindowSurface(instance: Instance, user_data: *anyopaque, allocator: ?*const anyopaque, surface: *Surface) c_int;
 
 pub fn initVulkanLoader(loader: anytype) void {
     c.glfwInitVulkanLoader(loader);
