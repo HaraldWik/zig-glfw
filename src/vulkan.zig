@@ -31,7 +31,7 @@ pub fn getPhysicalDevicePresentationSupport(instance: Instance, device: Physical
 }
 
 /// Same as 'glfwCreateWindowSurface'
-pub fn initSurface(instance: Instance, window: *root.Window, allocator: *const anyopaque) Surface {
+pub fn initSurface(instance: Instance, window: *root.Window, allocator: ?*const anyopaque) Surface {
     var surface: Surface = undefined;
     if (c.glfwCreateWindowSurface(@ptrCast(instance), window.toC(), @ptrCast(allocator), @ptrCast(&surface)) != 0) return error.CreateSurface;
     return surface;
