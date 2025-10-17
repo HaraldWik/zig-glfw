@@ -6,6 +6,8 @@ const Instance = *opaque {};
 const PhysicalDevice = *opaque {};
 const Surface = *opaque {};
 
+pub extern fn glfwCreateWindowSurface(instance: Instance, user_data: *anyopaque, surface: *Surface) c_int;
+
 pub fn initVulkanLoader(loader: anytype) void {
     c.glfwInitVulkanLoader(loader);
 }
@@ -33,6 +35,6 @@ pub fn getPhysicalDevicePresentationSupport(instance: Instance, device: Physical
 /// Same as 'glfwCreateWindowSurface'
 pub fn initSurface(instance: Instance, window: *root.Window, allocator: ?*const anyopaque) Surface {
     var surface: Surface = undefined;
-    if (c.glfwCreateWindowSurface(@ptrCast(instance), window.toC(), @ptrCast(allocator), @ptrCast(&surface)) != 0) return error.CreateSurface;
+    if (glfwCreateWindowSurface(@ptrCast(instance), window.toC(), @ptrCast(allocator), @ptrCast(&surface)) != 0) return error.CreateSurface;
     return surface;
 }
